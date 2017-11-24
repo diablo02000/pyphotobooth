@@ -14,5 +14,5 @@ Before run this tool, you need to install libraries:
 
 Then install the following libraries:
 ```shell
-~# apt-get install python3-picamera python3-PIL
+~# apt-get install python3-picamera
 ```
