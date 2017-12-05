@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
 from guizero import App, PushButton, Text, Picture
+from picamera import PiCamera
 import logging
 import os
 
@@ -35,8 +36,14 @@ if __name__ == "__main__":
             os.makedirs(params.output)
     except os.error as e:
         logging.error("Failed to write in {}: {}".format(params.output, e))
+        exit(2)
 
-    # Display GUI
-    app = App("The All-Seeing Pi", 800, 480)
-    message = Text(app, "I spotted you!")
+    camera = PiCamera()
+    camera.resolution = (800, 480)
+    camera.hflip = True
+    camera.start_preview(alpha=128)
+
+    # Create GUI with title.
+    app = App("Wedding Photobooth", 800, 480)
+    message = Text(app, "Smile !!!")
     app.display()
