@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from argparse import ArgumentParser
+from guizero import App, PushButton, Text, Picture
 import logging
 import os
 
@@ -17,7 +18,7 @@ def set_logging(lvl=logging.INFO):
 if __name__ == "__main__":
     # Create script arguments parser
     args_parse = ArgumentParser("Run photobooth.")
-    args_parse.add_argument("--output", "-o", metavar="folder", help="directory to store pictures")
+    args_parse.add_argument("--output", "-o", metavar="folder", help="directory to store pictures", required= True)
 
     params = args_parse.parse_args()
 
@@ -34,3 +35,8 @@ if __name__ == "__main__":
             os.makedirs(params.output)
     except os.error as e:
         logging.error("Failed to write in {}: {}".format(params.output, e))
+
+    # Display GUI
+    app = App("The All-Seeing Pi", 800, 480)
+    message = Text(app, "I spotted you!")
+    app.display()
