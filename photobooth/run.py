@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from argparse import ArgumentParser
 import logging
 import os
+import sys
+from argparse import ArgumentParser
+
+# Import Gui photobooth libs
+try:
+    sys.path.append('./libs/')
+    from gui import Gui
+except Exception as e:
+    logging.error("Failed to import Gui from .libs folder: {}".format(e))
 
 
 def set_logging(lvl=logging.INFO):
@@ -11,7 +19,8 @@ def set_logging(lvl=logging.INFO):
     :param lvl: Log level.
     :type lvl: Int
     """
-    logging.basicConfig(level=lvl)
+    log_format = '%(asctime)-15s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=lvl, format=log_format)
 
 
 if __name__ == "__main__":
@@ -34,3 +43,7 @@ if __name__ == "__main__":
     except os.error as e:
         logging.error("Failed to write in {}: {}".format(params.output, e))
         exit(2)
+
+    # Run Photobooth Frame
+    photobooth = Gui("My Photobooth", 800, 600)
+    photobooth.run()

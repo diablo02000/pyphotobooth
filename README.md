@@ -4,7 +4,7 @@
 
 Install `python`:
 ```shell
-~# apt-get install python3 python3-pip
+~# apt-get install python3 python3-pip python3-gi
 ```
 
 Before run this tool, you need to install libraries:
