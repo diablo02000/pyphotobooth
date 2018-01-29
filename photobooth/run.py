@@ -8,12 +8,14 @@ from argparse import ArgumentParser
 # Import Gui photobooth libs
 try:
     # Get current directory
-    current_dir = os.path.dirname(os.path.realpath(__file__))
+    root_directory = os.path.dirname(os.path.realpath(__file__))
 
-    sys.path.append('{}/libs/'.format(current_dir))
+    sys.path.append('{}/libs/'.format(root_directory))
+
     from gui import Gui
+    from configuration import Configuration
 except Exception as e:
-    logging.error("Failed to import Gui from .libs folder: {}".format(e))
+    logging.error("Failed to import class from libs folder: {}".format(e))
 
 
 def set_logging(lvl=logging.INFO):
@@ -26,27 +28,46 @@ def set_logging(lvl=logging.INFO):
     logging.basicConfig(level=lvl, format=log_format)
 
 
-if __name__ == "__main__":
-    # Create script arguments parser
-    args_parse = ArgumentParser("Run photobooth.")
-    args_parse.add_argument("--output", "-o", metavar="folder", help="directory to store pictures", required=True)
-
-    params = args_parse.parse_args()
-
+def check_pictures_directory(pictures_directory):
+    """
+    Check if picture directory exist and is writable.
+    :param pictures_directory: Path where to store pictures.
+    """
     # Check if output directory is writable.
     try:
-        if os.path.isdir(params.output):
-            open(os.path.join(params.output, "photobooth.txt"), 'a').close()
+        if os.path.isdir(pictures_directory):
+            open(os.path.join(pictures_directory, "photobooth.txt"), 'a').close()
 
             # delete test file
-            os.remove("{}/{}".format(params.output, "photobooth.txt"))
+            os.remove("{}/{}".format(pictures_directory, "photobooth.txt"))
 
         else:
             raise os.error("Folder does not exists.")
+
     except os.error as e:
-        logging.error("Failed to write in {}: {}".format(params.output, e))
-        exit(2)
+        raise os.error("Failed to write in {}: {}".format(pictures_directory, e))
+
+
+if __name__ == "__main__":
+    # Create script arguments parser
+    args_parse = ArgumentParser("Run photobooth.")
+    args_parse.add_argument("--config", "-c", metavar="file", help="Configuration file", required=True)
+    args_parse.add_argument("--language", "-l", metavar="language", default="fr", help="choose application language.")
+
+    params = args_parse.parse_args()
+
+    # Extract config from configuration file.
+    config = Configuration(params.config)
+
+    # Check if output directory is writable.
+    check_pictures_directory(config.pictures_directory)
 
     # Run Photobooth Frame
-    photobooth = Gui("My Photobooth", 800, 600)
+    try:
+        photobooth = Gui(getattr(config, params.language)['title'], config.resolution['width'],
+                         config.resolution['height'], getattr(config, params.language))
+    except AttributeError:
+        logging.error("Language {} not found.".format(params.language))
+        exit(1)
+
     photobooth.run()

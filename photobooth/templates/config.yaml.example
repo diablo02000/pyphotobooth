@@ -1,0 +1,13 @@
+pictures_directory: "~/Images"
+resolution:
+  width: 800
+  height: 600
+languages:
+  fr:
+    title: "Mon Photomaton"
+    buttons:
+      take_pictures: "Prendre photo"
+  en:
+    title: "My Photobooth"
+    buttons:
+      take_pictures: "Take picture"

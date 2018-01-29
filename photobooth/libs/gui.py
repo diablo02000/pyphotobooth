@@ -7,16 +7,21 @@ import time
 
 class Gui(Gtk.Window):
 
-    def __init__(self, title, width, height):
+    def __init__(self, title, width, height, labels_dictionary):
         """
         Init Gui with title, width and height.
         :param title: Gui title.
         :param width: Gui width in pixel.
         :param height: Gui height in pixel.
+        :param labels_dictionary: Labels text in specific language.
         :type title: String.
         :type width: Integer.
         :type height: Integer.
+        :type labels_dictionary: Dictionary.
         """
+        # Define label text.
+        self.labels_dictionary = labels_dictionary
+
         Gtk.Window.__init__(self, title=title)
         self.set_size_request(width, height)
         self.connect('delete-event', Gtk.main_quit)
@@ -34,7 +39,7 @@ class Gui(Gtk.Window):
         box_main_pane.set_homogeneous(False)
 
         # Create take picture button
-        button_take_picture = Gtk.Button(label="Prendre photo")
+        button_take_picture = Gtk.Button(label=self.labels_dictionary['buttons']['take_pictures'])
         button_take_picture.connect("clicked", self.take_picture)
         box_main_pane.pack_end(button_take_picture, False, False, 10)
 
