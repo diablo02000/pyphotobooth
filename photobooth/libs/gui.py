@@ -2,6 +2,7 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+import time
 
 
 class Gui(Gtk.Window):
@@ -19,32 +20,34 @@ class Gui(Gtk.Window):
         Gtk.Window.__init__(self, title=title)
         self.set_size_request(width, height)
         self.connect('delete-event', Gtk.main_quit)
+        self.set_border_width(10)
+
+        # Add widget
+        self.__set_pane()
 
     def __set_pane(self):
         """
-        Create Grid layout with 6 px space
-        between rows and columns
+        Set all elements for Gui.
         """
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        # Create main pane
+        box_main_pane = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        box_main_pane.set_homogeneous(False)
 
-        stack = Gtk.Stack()
-        stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        stack.set_transition_duration(1000)
-
-        checkbutton = Gtk.CheckButton("Click me!")
-        stack.add_titled(checkbutton, "check", "Check Button")
-
-        label = Gtk.Label()
-        label.set_markup("<big>A fancy label</big>")
-        stack.add_titled(label, "label", "A label")
-
-        stack_switcher = Gtk.StackSwitcher()
-        stack_switcher.set_stack(stack)
-        vbox.pack_start(stack_switcher, True, True, 0)
-        vbox.pack_start(stack, True, True, 0)
+        # Create take picture button
+        button_take_picture = Gtk.Button(label="Prendre photo")
+        button_take_picture.connect("clicked", self.take_picture)
+        box_main_pane.pack_end(button_take_picture, False, False, 10)
 
         # Attach layout to window
-        self.add(vbox)
+        self.add(box_main_pane)
+
+    def take_picture(self, widget, waiting_time=5):
+        for i in range(waiting_time):
+            print("wait {} secondes.".format(1))
+            time.sleep(1)
+
+        print("Take picture !!")
+
 
     def run(self):
         """
