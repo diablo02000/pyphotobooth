@@ -7,7 +7,10 @@ from argparse import ArgumentParser
 
 # Import Gui photobooth libs
 try:
-    sys.path.append('./libs/')
+    # Get current directory
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+
+    sys.path.append('{}/libs/'.format(current_dir))
     from gui import Gui
 except Exception as e:
     logging.error("Failed to import Gui from .libs folder: {}".format(e))
