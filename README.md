@@ -1,4 +1,4 @@
-![Image of Yaktocat](./img/photobooth.png)
+![Photobooth icons](photobooth/img/photobooth.png)
 # PhotoBooth
 
 ## Description
