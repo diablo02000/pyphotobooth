@@ -19,22 +19,24 @@ class Gui(Gtk.Window):
         :type height: Integer.
         :type labels_dictionary: Dictionary.
         """
-        # Define label text.
+        # Define labels text dictionary.
         self.labels_dictionary = labels_dictionary
 
+        # Create GTK Window
         Gtk.Window.__init__(self, title=title)
         self.set_size_request(width, height)
         self.connect('delete-event', Gtk.main_quit)
         self.set_border_width(10)
+        self.set_icon_from_file("./img/photobooth.png")
 
-        # Add widget
+        # Add widgets
         self.__set_pane()
 
     def __set_pane(self):
         """
-        Set all elements for Gui.
+        Set all elements for photobooth Gui.
         """
-        # Create main pane
+        # Create main pane.
         box_main_pane = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         box_main_pane.set_homogeneous(False)
 
@@ -52,7 +54,6 @@ class Gui(Gtk.Window):
             time.sleep(1)
 
         print("Take picture !!")
-
 
     def run(self):
         """
