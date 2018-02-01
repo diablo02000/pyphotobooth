@@ -2,6 +2,7 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+from picamera import PiCamera
 import time
 
 
@@ -31,6 +32,16 @@ class Gui(Gtk.Window):
 
         # Add widgets
         self.__set_pane()
+
+    def _set_camera(self):
+        """
+        Init Camera module
+        :return:
+        """
+        camera = PiCamera()
+        camera.resolution = (800, 480)
+        camera.hflip = True
+        camera.start_preview(alpha=128)
 
     def __set_pane(self):
         """
