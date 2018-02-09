@@ -1,4 +1,5 @@
 pictures_directory: "~/Images"
+log: "./photobooth.log"
 resolution:
   width: 800
   height: 600

@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser
+from pprint import pprint
 
 """
     Try to import Photobooth apps libs.
@@ -20,16 +21,32 @@ except Exception as e:
     logging.error("Failed to import class from libs folder: {}".format(e))
     exit(2)
 
+# Define logger
+log4py = logging.getLogger('photobooth')
 
-def set_logging(lvl=logging.INFO):
+def set_logging(lvl, log_path=None):
     """
-    Set logging output.
+    Set logging module
     :param lvl: Log level.
     :type lvl: Int
     """
+    # define format
     log_format = '%(asctime)-15s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=lvl, format=log_format)
+    log_date_format = "%Y-%m-%d %H:%M:%S"
+    log_formatter = logging.Formatter(log_format, log_date_format)
 
+    # Create file handler if log path define
+    if log_path:
+        f_handler = logging.FileHandler(log_path)
+        f_handler.setFormatter(log_formatter)
+        log4py.addHandler(f_handler)
+    else:
+        # Create streamHandler
+        s_handler = logging.StreamHandler(sys.stdout)
+        s_handler.setFormatter(log_formatter)
+        log4py.addHandler(s_handler)
+
+    log4py.setLevel(lvl)
 
 def check_output_directory(directory):
     """
@@ -47,7 +64,7 @@ def check_output_directory(directory):
     except Exception as e:
         logging.error("Unexpected error: {}".format(e))
 
-def run(cfg):
+def run(cfg, verbose):
     """
         Run Photobooth application.
     """
@@ -57,7 +74,19 @@ def run(cfg):
     # Check output directory
     check_output_directory(configuration.pictures_directory)
 
-    print(configuration.__dict__)
+    # Enable verbose log
+    if verbose:
+        log_lvl = logging.DEBUG
+    else:
+        log_lvl = logging.INFO
+
+    try:
+        set_logging(log_path=configuration.log, lvl=log_lvl)
+    except Exception:
+        set_logging(lvl=log_lvl)
+
+    log4py.info("Photobooth apps running ...")
+    log4py.debug("ok")
 
     """
         # Run Photobooth Frame
@@ -78,7 +107,8 @@ if __name__ == "__main__":
     args_parse = ArgumentParser("Run photobooth.")
     args_parse.add_argument("--config", "-c", metavar="file", help="Configuration file", required=True)
     args_parse.add_argument("--language", "-l", metavar="language", default="fr", help="choose application language.")
+    args_parse.add_argument("--verbose", "-V", action="store_true")
 
     params = args_parse.parse_args()
 
-    run(cfg=params.config)
+    run(cfg=params.config, verbose=params.verbose)
