@@ -21,6 +21,11 @@ except Exception as e:
     logging.error("Failed to import class from libs folder: {}".format(e))
     exit(2)
 
+
+class PhotoboothException(Exception):
+    pass
+
+
 # Define logger
 log4py = logging.getLogger('photobooth')
 
@@ -46,6 +51,7 @@ def set_logging(lvl, log_path=None):
         s_handler.setFormatter(log_formatter)
         log4py.addHandler(s_handler)
 
+    # Define log level
     log4py.setLevel(lvl)
 
 def check_output_directory(directory):
@@ -59,10 +65,9 @@ def check_output_directory(directory):
 
         os.remove(testing_file)
     except NotADirectoryError:
-        logging.error("{} not a valide directory.".format(directory))
-        exit(2)
+        raise PhotoboothException("{} not a valide directory.".format(directory))
     except Exception as e:
-        logging.error("Unexpected error: {}".format(e))
+        raise PhotoboothException("Unexpected error: {}".format(e))
 
 def run(cfg, verbose):
     """
@@ -86,7 +91,6 @@ def run(cfg, verbose):
         set_logging(lvl=log_lvl)
 
     log4py.info("Photobooth apps running ...")
-    log4py.debug("ok")
 
     """
         # Run Photobooth Frame
