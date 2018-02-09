@@ -5,17 +5,20 @@ import os
 import sys
 from argparse import ArgumentParser
 
-# Import Gui photobooth libs
+"""
+    Try to import Photobooth apps libs.
+"""
 try:
     # Get current directory
-    root_directory = os.path.dirname(os.path.realpath(__file__))
+    libs_directory = "{}/libs/".format(os.path.dirname(os.path.realpath(__file__)))
 
-    sys.path.append('{}/libs/'.format(root_directory))
+    sys.path.append(libs_directory)
 
     from gui import Gui
     from configuration import Configuration
 except Exception as e:
     logging.error("Failed to import class from libs folder: {}".format(e))
+    exit(2)
 
 
 def set_logging(lvl=logging.INFO):
@@ -28,24 +31,46 @@ def set_logging(lvl=logging.INFO):
     logging.basicConfig(level=lvl, format=log_format)
 
 
-def check_pictures_directory(pictures_directory):
+def check_output_directory(directory):
     """
-    Check if picture directory exist and is writable.
-    :param pictures_directory: Path where to store pictures.
+    Check if output directory exist and is writable.
+    :param directory: Path where to store pictures.
     """
-    # Check if output directory is writable.
     try:
-        if os.path.isdir(pictures_directory):
-            open(os.path.join(pictures_directory, "photobooth.txt"), 'a').close()
+        testing_file = os.path.join(directory, "photobooth_apps.txt")
+        open(testing_file, 'a').close()
 
-            # delete test file
-            os.remove("{}/{}".format(pictures_directory, "photobooth.txt"))
+        os.remove(testing_file)
+    except NotADirectoryError:
+        logging.error("{} not a valide directory.".format(directory))
+        exit(2)
+    except Exception as e:
+        logging.error("Unexpected error: {}".format(e))
 
-        else:
-            raise os.error("Folder does not exists.")
+def run(cfg):
+    """
+        Run Photobooth application.
+    """
+    # Init configuration
+    configuration = Configuration(cfg)
 
-    except os.error as e:
-        raise os.error("Failed to write in {}: {}".format(pictures_directory, e))
+    # Check output directory
+    check_output_directory(configuration.pictures_directory)
+
+    print(configuration.__dict__)
+
+    """
+        # Run Photobooth Frame
+        try:
+            photobooth = Gui(getattr(config, params.language)['title'], config.resolution['width'],
+                             config.resolution['height'], getattr(config, params.language))
+        except AttributeError:
+            logging.error("Language {} not found.".format(params.language))
+            exit(1)
+
+        photobooth.run()
+    """
+
 
 
 if __name__ == "__main__":
@@ -56,18 +81,4 @@ if __name__ == "__main__":
 
     params = args_parse.parse_args()
 
-    # Extract config from configuration file.
-    config = Configuration(params.config)
-
-    # Check if output directory is writable.
-    check_pictures_directory(config.pictures_directory)
-
-    # Run Photobooth Frame
-    try:
-        photobooth = Gui(getattr(config, params.language)['title'], config.resolution['width'],
-                         config.resolution['height'], getattr(config, params.language))
-    except AttributeError:
-        logging.error("Language {} not found.".format(params.language))
-        exit(1)
-
-    photobooth.run()
+    run(cfg=params.config)

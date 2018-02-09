@@ -21,7 +21,7 @@ To make your photobooth, you need:
 
 Install `python`:
 ```shell
-~# apt-get install python3 python3-pip python3-gi
+~# apt-get install python3 python3-pip python3-tk
 ```
 
 Before run this tool, you need to install libraries:
