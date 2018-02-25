@@ -69,7 +69,7 @@ def check_output_directory(directory):
     except Exception as e:
         raise PhotoboothException("Unexpected error: {}".format(e))
 
-def run(cfg, verbose):
+def run(cfg, language, verbose):
     """
         Run Photobooth application.
     """
@@ -92,18 +92,23 @@ def run(cfg, verbose):
 
     log4py.info("Photobooth apps running ...")
 
-    """
-        # Run Photobooth Frame
-        try:
-            photobooth = Gui(getattr(config, params.language)['title'], config.resolution['width'],
-                             config.resolution['height'], getattr(config, params.language))
-        except AttributeError:
-            logging.error("Language {} not found.".format(params.language))
-            exit(1)
 
-        photobooth.run()
+    # Run Photobooth Frame
     """
+    try:
+        #photobooth_app = Gui(getattr(config, params.language)['title'], config.resolution['width'],
+        #                     config.resolution['height'], getattr(config, params.language))
 
+
+    except AttributeError:
+        logging.error("Language {} not found.".format(language))
+        exit(1)
+    """
+    photobooth_app = Gui(configuration.resolution['width'],
+                         configuration.resolution['height'],
+                         getattr(configuration, language))
+
+    photobooth_app.run()
 
 
 if __name__ == "__main__":
@@ -115,4 +120,4 @@ if __name__ == "__main__":
 
     params = args_parse.parse_args()
 
-    run(cfg=params.config, verbose=params.verbose)
+    run(cfg=params.config, language=params.language, verbose=params.verbose)
