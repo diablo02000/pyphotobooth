@@ -1,66 +1,60 @@
-import gi
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-import time
+"""
+    Try to import tkinter module
+"""
+try:
+    # Python 2.7
+	from Tkinter import *
+except ImportError:
+    # Python 3
+	from tkinter import *
 
+class Gui:
 
-class Gui(Gtk.Window):
-
-    def __init__(self, title, width, height, labels_dictionary):
+    def __init__(self, width, height, language_labels_set, videoStream=None):
         """
-        Init Gui with title, width and height.
-        :param title: Gui title.
-        :param width: Gui width in pixel.
-        :param height: Gui height in pixel.
-        :param labels_dictionary: Labels text in specific language.
-        :type title: String.
-        :type width: Integer.
-        :type height: Integer.
-        :type labels_dictionary: Dictionary.
+            Create main window with main settings.
+            :param width: Window width.
+            :param height: Window height.
+            :param language_labels_set: language data set.
+            :type width: Int
+            :type height: Int
+            :type language_labels_set: Configuration
         """
-        # Define labels text dictionary.
-        self.labels_dictionary = labels_dictionary
+        self.videoStream = videoStream
 
-        # Create GTK Window
-        Gtk.Window.__init__(self, title=title)
-        self.set_size_request(width, height)
-        self.connect('delete-event', Gtk.main_quit)
-        self.set_border_width(10)
-        self.set_icon_from_file("./img/photobooth.png")
+        # Create main window
+        self.window = Tk()
 
-        # Add widgets
-        self.__set_pane()
+        # Get screen size
+        _screen_width = self.window.winfo_screenwidth() # width of the screen
+        _screen_height = self.window.winfo_screenheight() # height of the screen
 
-    def __set_pane(self):
+        # define coordonate
+        x = (_screen_width/2) - (width/2)
+        y = (_screen_height/2) - (height/2)
+
+        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
+        self.window.wm_protocol("WM_DELETE_WINDOW", self.window.quit)
+        self.window.wm_title(language_labels_set['title'])
+        self._set_widget(language_labels_set)
+
+    def _set_widget(self, labels_set):
         """
-        Set all elements for photobooth Gui.
+            Add widget to main window
         """
-        # Create main pane.
-        box_main_pane = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        box_main_pane.set_homogeneous(False)
+        # Add Video Frame
+        frame_video_stream = Frame(self.window, borderwidth=2, relief=GROOVE)
+        frame_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
-        # Create take picture button
-        button_take_picture = Gtk.Button(label=self.labels_dictionary['buttons']['take_pictures'])
-        button_take_picture.connect("clicked", self.take_picture)
-        box_main_pane.pack_end(button_take_picture, False, False, 10)
-
-        # Attach layout to window
-        self.add(box_main_pane)
-
-    def take_picture(self, widget, waiting_time=5):
-        for i in range(waiting_time):
-            print("wait {} secondes.".format(1))
-            time.sleep(1)
-
-        print("Take picture !!")
+        # Add Snapshot button
+        btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"])
+        btn_take_picture.pack(side="bottom", fill="both", padx=10, pady=10)
 
     def run(self):
         """
-        Start GTK gui.
+            Start Gui apps.
         """
-        # Enable widget
-        self.show_all()
-
-        # Run GTK loop
-        Gtk.main()
+        self.window.mainloop()
