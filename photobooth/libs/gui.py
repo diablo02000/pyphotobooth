@@ -46,8 +46,9 @@ class Gui:
             Add widget to main window
         """
         # Add Video Frame
-        frame_video_stream = Frame(self.window, borderwidth=2, relief=GROOVE)
-        frame_video_stream.pack(side="top", fill="both", padx=10, pady=10)
+        frame_video_stream = self.videoStream.read()
+        panel_video_stream = Label(image=frame_video_stream)
+        panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Add Snapshot button
         btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"])
