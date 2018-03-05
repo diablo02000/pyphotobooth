@@ -5,6 +5,7 @@ import os
 import sys
 from argparse import ArgumentParser
 from pprint import pprint
+from imutils.video import VideoStream
 
 """
     Try to import Photobooth apps libs.
@@ -92,6 +93,8 @@ def run(cfg, language, verbose):
 
     log4py.info("Photobooth apps running ...")
 
+    # Create ViedoStream flux
+    viedo_stream = VideoStream(usePiCamera=1).start()
 
     # Run Photobooth Frame
     """
@@ -106,7 +109,8 @@ def run(cfg, language, verbose):
     """
     photobooth_app = Gui(configuration.resolution['width'],
                          configuration.resolution['height'],
-                         getattr(configuration, language))
+                         getattr(configuration, language),
+                         videoStream=viedo_stream)
 
     photobooth_app.run()
 
