@@ -32,6 +32,9 @@ class Configuration(object):
             self.resolution = config['resolution']
             self.pictures_directory = os.path.expanduser(config['pictures_directory'])
 
+            if 'log' in config.keys():
+                self.log = os.path.expanduser(config['log'])
+
             # Set meta for each language
             for lang in config['languages'].keys():
                 setattr(self, lang, config['languages'][lang])

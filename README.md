@@ -21,7 +21,7 @@ To make your photobooth, you need:
 
 Install `python`:
 ```shell
-~# apt-get install python3 python3-pip python3-gi
+~# apt-get install python3 python3-pip python3-tk
 ```
 
 Before run this tool, you need to install libraries:
@@ -33,3 +33,11 @@ Then install the following libraries:
 ```shell
 ~# apt-get install python3-picamera
 ```
+
+## Troubleshoot
+
+```
+ImportError: libcblas.so.3: cannot opne shared object file: No such  file or directory
+```
+
+install apt-get install libatlas-base-dev

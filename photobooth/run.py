@@ -4,48 +4,115 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser
+from pprint import pprint
+from imutils.video import VideoStream
 
-# Import Gui photobooth libs
+"""
+    Try to import Photobooth apps libs.
+"""
 try:
     # Get current directory
-    root_directory = os.path.dirname(os.path.realpath(__file__))
+    libs_directory = "{}/libs/".format(os.path.dirname(os.path.realpath(__file__)))
 
-    sys.path.append('{}/libs/'.format(root_directory))
+    sys.path.append(libs_directory)
 
     from gui import Gui
     from configuration import Configuration
 except Exception as e:
     logging.error("Failed to import class from libs folder: {}".format(e))
+    exit(2)
 
 
-def set_logging(lvl=logging.INFO):
+class PhotoboothException(Exception):
+    pass
+
+
+# Define logger
+log4py = logging.getLogger('photobooth')
+
+def set_logging(lvl, log_path=None):
     """
-    Set logging output.
+    Set logging module
     :param lvl: Log level.
     :type lvl: Int
     """
+    # define format
     log_format = '%(asctime)-15s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=lvl, format=log_format)
+    log_date_format = "%Y-%m-%d %H:%M:%S"
+    log_formatter = logging.Formatter(log_format, log_date_format)
 
+    # Create file handler if log path define
+    if log_path:
+        f_handler = logging.FileHandler(log_path)
+        f_handler.setFormatter(log_formatter)
+        log4py.addHandler(f_handler)
+    else:
+        # Create streamHandler
+        s_handler = logging.StreamHandler(sys.stdout)
+        s_handler.setFormatter(log_formatter)
+        log4py.addHandler(s_handler)
 
-def check_pictures_directory(pictures_directory):
+    # Define log level
+    log4py.setLevel(lvl)
+
+def check_output_directory(directory):
     """
-    Check if picture directory exist and is writable.
-    :param pictures_directory: Path where to store pictures.
+    Check if output directory exist and is writable.
+    :param directory: Path where to store pictures.
     """
-    # Check if output directory is writable.
     try:
-        if os.path.isdir(pictures_directory):
-            open(os.path.join(pictures_directory, "photobooth.txt"), 'a').close()
+        testing_file = os.path.join(directory, "photobooth_apps.txt")
+        open(testing_file, 'a').close()
 
-            # delete test file
-            os.remove("{}/{}".format(pictures_directory, "photobooth.txt"))
+        os.remove(testing_file)
+    except NotADirectoryError:
+        raise PhotoboothException("{} not a valide directory.".format(directory))
+    except Exception as e:
+        raise PhotoboothException("Unexpected error: {}".format(e))
 
-        else:
-            raise os.error("Folder does not exists.")
+def run(cfg, language, verbose):
+    """
+        Run Photobooth application.
+    """
+    # Init configuration
+    configuration = Configuration(cfg)
 
-    except os.error as e:
-        raise os.error("Failed to write in {}: {}".format(pictures_directory, e))
+    # Check output directory
+    check_output_directory(configuration.pictures_directory)
+
+    # Enable verbose log
+    if verbose:
+        log_lvl = logging.DEBUG
+    else:
+        log_lvl = logging.INFO
+
+    try:
+        set_logging(log_path=configuration.log, lvl=log_lvl)
+    except Exception:
+        set_logging(lvl=log_lvl)
+
+    log4py.info("Photobooth apps running ...")
+
+    # Create ViedoStream flux
+    viedo_stream = VideoStream(usePiCamera=1).start()
+
+    # Run Photobooth Frame
+    """
+    try:
+        #photobooth_app = Gui(getattr(config, params.language)['title'], config.resolution['width'],
+        #                     config.resolution['height'], getattr(config, params.language))
+
+
+    except AttributeError:
+        logging.error("Language {} not found.".format(language))
+        exit(1)
+    """
+    photobooth_app = Gui(configuration.resolution['width'],
+                         configuration.resolution['height'],
+                         getattr(configuration, language),
+                         videoStream=viedo_stream)
+
+    photobooth_app.run()
 
 
 if __name__ == "__main__":
@@ -53,21 +120,8 @@ if __name__ == "__main__":
     args_parse = ArgumentParser("Run photobooth.")
     args_parse.add_argument("--config", "-c", metavar="file", help="Configuration file", required=True)
     args_parse.add_argument("--language", "-l", metavar="language", default="fr", help="choose application language.")
+    args_parse.add_argument("--verbose", "-V", action="store_true")
 
     params = args_parse.parse_args()
 
-    # Extract config from configuration file.
-    config = Configuration(params.config)
-
-    # Check if output directory is writable.
-    check_pictures_directory(config.pictures_directory)
-
-    # Run Photobooth Frame
-    try:
-        photobooth = Gui(getattr(config, params.language)['title'], config.resolution['width'],
-                         config.resolution['height'], getattr(config, params.language))
-    except AttributeError:
-        logging.error("Language {} not found.".format(params.language))
-        exit(1)
-
-    photobooth.run()
+    run(cfg=params.config, language=params.language, verbose=params.verbose)
