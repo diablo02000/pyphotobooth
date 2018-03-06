@@ -4,8 +4,6 @@ from threading import Thread
 from picamera import PiCamera
 from io import BytesIO
 from PIL import ImageTk, Image
-import logging
-
 
 """
     Try to import tkinter module
@@ -19,15 +17,17 @@ except ImportError:
 
 class Gui:
 
-    def __init__(self, width, height, labels_text):
+    def __init__(self, width, height, labels_text, log4py):
         """
             Create main window with main settings.
             :param width: Window width.
             :param height: Window height.
             :param labels_text: language data set.
+            :param log4py: log4py handler.
             :type width: Int
             :type height: Int
             :type labels_text: Configuration
+            :type log4py: log4py
         """
         # Create main window
         self.window = Tk()
@@ -54,7 +54,7 @@ class Gui:
           :type height: Int
           :rtype: Tuple
         """
-        logging.debug("Define Window position on the screen.")
+        log4py.debug("Define Window position on the screen.")
 
         # define coordonate
         x = (self.window.winfo_screenwidth()/2) - (width/2)
@@ -66,7 +66,7 @@ class Gui:
         """
             Add Widgets to main window
         """
-        logging.debug("Add Video panel and button on main window.")
+        log4py.debug("Add Video panel and button on main window.")
 
         # Add Video Frame
         self.panel_video_stream = Label(self.window)
@@ -81,13 +81,13 @@ class Gui:
         """
           Create Thread to video loop.
         """
-        logging.debug("Start thread camera handler.")
+        log4py.debug("Start thread camera handler.")
 
         cam_thread = Thread(target=cam_handler)
         cam_thread.start()
 
     def _cam_handler(self):
-        logging.debug("Create camera video loop.")
+        log4py.debug("Create camera video loop.")
         _cam = PiCamera()
 
         _cam.exposure_mode = 'auto'

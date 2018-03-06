@@ -91,12 +91,13 @@ def run(cfg, language, verbose):
         # Create Gui
         photobooth_app = Gui(configuration.resolution['width'],
                              configuration.resolution['height'],
-                             getattr(configuration, language))
+                             getattr(configuration, language),
+                             log4py)
 
         # Run Photobooth.
         log4py.info("Photobooth apps running ...")
         photobooth_app.run()
-        
+
     except Exception as e:
         log4py.error("Failed to run Photobooth app: {}".format(e))
         exit(1)
