@@ -48,6 +48,9 @@ class Gui:
         self.panel_video_stream = None
         self._set_widgets(labels_text)
 
+        # Start camera handler.
+        self._start_cam_handler()
+
     def _define_window_position(self, width, height):
         """
           Define Window position base on window and screen size.
@@ -86,10 +89,10 @@ class Gui:
         """
         self.log4py.debug("Start thread camera handler.")
 
-        cam_thread = Thread(target=cam_handler)
+        cam_thread = Thread(target=self._video_loop)
         cam_thread.start()
 
-    def _cam_handler(self):
+    def _video_loop(self):
         self.log4py.debug("Create camera video loop.")
         _cam = PiCamera()
 
