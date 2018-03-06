@@ -82,8 +82,7 @@ class Gui:
         btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"])
         btn_take_picture.pack(side="bottom", fill="both", padx=10, pady=10)
 
-    @staticmethod
-    def _start_cam_handler():
+    def _start_cam_handler(self):
         """
           Create Thread to video loop.
         """
