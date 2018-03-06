@@ -29,6 +29,9 @@ class Gui:
             :type labels_text: Configuration
             :type log4py: log4py
         """
+        # Get logger
+        self.log4py = log4py
+
         # Create main window
         self.window = Tk()
 
@@ -54,7 +57,7 @@ class Gui:
           :type height: Int
           :rtype: Tuple
         """
-        log4py.debug("Define Window position on the screen.")
+        self.log4py.debug("Define Window position on the screen.")
 
         # define coordonate
         x = (self.window.winfo_screenwidth()/2) - (width/2)
@@ -66,7 +69,7 @@ class Gui:
         """
             Add Widgets to main window
         """
-        log4py.debug("Add Video panel and button on main window.")
+        self.log4py.debug("Add Video panel and button on main window.")
 
         # Add Video Frame
         self.panel_video_stream = Label(self.window)
@@ -81,13 +84,13 @@ class Gui:
         """
           Create Thread to video loop.
         """
-        log4py.debug("Start thread camera handler.")
+        self.log4py.debug("Start thread camera handler.")
 
         cam_thread = Thread(target=cam_handler)
         cam_thread.start()
 
     def _cam_handler(self):
-        log4py.debug("Create camera video loop.")
+        self.log4py.debug("Create camera video loop.")
         _cam = PiCamera()
 
         _cam.exposure_mode = 'auto'
@@ -108,4 +111,5 @@ class Gui:
         """
             Start Gui apps.
         """
+        self.log4py.debug("Start main loop.")
         self.window.mainloop()
