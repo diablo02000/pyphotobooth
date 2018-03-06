@@ -4,6 +4,7 @@ from threading import Thread
 from picamera import PiCamera
 from io import BytesIO
 from PIL import ImageTk, Image
+import logging
 
 
 """
@@ -53,6 +54,8 @@ class Gui:
           :type height: Int
           :rtype: Tuple
         """
+        logging.debug("Define Window position on the screen.")
+
         # define coordonate
         x = (self.window.winfo_screenwidth()/2) - (width/2)
         y = (self.window.winfo_screenheight()/2) - (height/2)
@@ -63,6 +66,8 @@ class Gui:
         """
             Add Widgets to main window
         """
+        logging.debug("Add Video panel and button on main window.")
+
         # Add Video Frame
         self.panel_video_stream = Label(self.window)
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
@@ -76,10 +81,13 @@ class Gui:
         """
           Create Thread to video loop.
         """
+        logging.debug("Start thread camera handler.")
+
         cam_thread = Thread(target=cam_handler)
         cam_thread.start()
 
     def _cam_handler(self):
+        logging.debug("Create camera video loop.")
         _cam = PiCamera()
 
         _cam.exposure_mode = 'auto'

@@ -87,16 +87,16 @@ def run(cfg, language, verbose):
     except Exception:
         set_logging(lvl=log_lvl)
 
-    log4py.info("Photobooth apps running ...")
-
     try:
         # Create Gui
         photobooth_app = Gui(configuration.resolution['width'],
                              configuration.resolution['height'],
-                             configuration.resolution['height'])
+                             getattr(configuration, language))
 
         # Run Photobooth.
+        log4py.info("Photobooth apps running ...")
         photobooth_app.run()
+        
     except Exception as e:
         log4py.error("Failed to run Photobooth app: {}".format(e))
         exit(1)
