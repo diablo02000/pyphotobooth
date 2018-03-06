@@ -38,11 +38,11 @@ class Gui:
         self.window.wm_protocol("WM_DELETE_WINDOW", self.window.quit)
 
         # Define window title
-        self.window.wm_title(language_labels_set['title'])
+        self.window.wm_title(labels_text['title'])
 
         # Append Widget on window
         self.panel_video_stream = None
-        self._set_widgets(language_labels_set)
+        self._set_widgets(labels_text)
 
     def _define_window_position(self, width, height):
         """
