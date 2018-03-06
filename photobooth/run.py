@@ -4,8 +4,9 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser
-from pprint import pprint
-from imutils.video import VideoStream
+
+class PhotoboothException(Exception):
+    pass
 
 """
     Try to import Photobooth apps libs.
@@ -21,11 +22,6 @@ try:
 except Exception as e:
     logging.error("Failed to import class from libs folder: {}".format(e))
     exit(2)
-
-
-class PhotoboothException(Exception):
-    pass
-
 
 # Define logger
 log4py = logging.getLogger('photobooth')
@@ -93,27 +89,17 @@ def run(cfg, language, verbose):
 
     log4py.info("Photobooth apps running ...")
 
-    # Create ViedoStream flux
-    viedo_stream = VideoStream(usePiCamera=1).start()
-
-    # Run Photobooth Frame
-    """
     try:
-        #photobooth_app = Gui(getattr(config, params.language)['title'], config.resolution['width'],
-        #                     config.resolution['height'], getattr(config, params.language))
+        # Create Gui
+        photobooth_app = Gui(configuration.resolution['width'],
+                             configuration.resolution['height'],
+                             configuration.resolution['height'])
 
-
-    except AttributeError:
-        logging.error("Language {} not found.".format(language))
+        # Run Photobooth.
+        photobooth_app.run()
+    except Exception as e:
+        log4py.error("Failed to run Photobooth app: {}".format(e))
         exit(1)
-    """
-    photobooth_app = Gui(configuration.resolution['width'],
-                         configuration.resolution['height'],
-                         getattr(configuration, language),
-                         videoStream=viedo_stream)
-
-    photobooth_app.run()
-
 
 if __name__ == "__main__":
     # Create script arguments parser

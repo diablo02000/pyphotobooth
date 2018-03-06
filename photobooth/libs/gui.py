@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import threading
-import imutils
-import cv2
+from threading import Thread
+from picamera import PiCamera
+from io import BytesIO
+from PIL import ImageTk, Image
+
 
 """
     Try to import tkinter module
@@ -16,82 +18,83 @@ except ImportError:
 
 class Gui:
 
-    def __init__(self, width, height, language_labels_set, videoStream=None):
+    def __init__(self, width, height, labels_text):
         """
             Create main window with main settings.
             :param width: Window width.
             :param height: Window height.
-            :param language_labels_set: language data set.
+            :param labels_text: language data set.
             :type width: Int
             :type height: Int
-            :type language_labels_set: Configuration
+            :type labels_text: Configuration
         """
-        self.videoStream = videoStream
-
         # Create main window
         self.window = Tk()
 
-        # Create thread for video loop.
-        self.stopEvent = threading.Event()
-        self.thread = threading.Thread(target=self._videoLoop, args=())
-        self.thread.start()
+        # Set screen position.
+        self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
 
-        # Get screen size
-        _screen_width = self.window.winfo_screenwidth() # width of the screen
-        _screen_height = self.window.winfo_screenheight() # height of the screen
-
-        # define coordonate
-        x = (_screen_width/2) - (width/2)
-        y = (_screen_height/2) - (height/2)
-
-        self.panel_video_stream = None
-        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
+        # Close window event.
         self.window.wm_protocol("WM_DELETE_WINDOW", self.window.quit)
-        self.window.wm_title(language_labels_set['title'])
-        self._set_widget(language_labels_set)
 
-    def _set_widget(self, labels_set):
+        # Define window title
+        self.window.wm_title(language_labels_set['title'])
+
+        # Append Widget on window
+        self.panel_video_stream = None
+        self._set_widgets(language_labels_set)
+
+    def _define_window_position(self, width, height):
         """
-            Add widget to main window
+          Define Window position base on window and screen size.
+          :param width: Window width.
+          :param height: Window height.
+          :type width: Int
+          :type height: Int
+          :rtype: Tuple
+        """
+        # define coordonate
+        x = (self.window.winfo_screenwidth()/2) - (width/2)
+        y = (self.window.winfo_screenheight()/2) - (height/2)
+
+        return width, height, x, y
+
+    def _set_widgets(self, labels_set):
+        """
+            Add Widgets to main window
         """
         # Add Video Frame
-        frame_video_stream = self.videoStream.read()
-        self.panel_video_stream = Label(image=frame_video_stream)
+        self.panel_video_stream = Label(self.window)
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Add Snapshot button
         btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"])
         btn_take_picture.pack(side="bottom", fill="both", padx=10, pady=10)
 
-    def _videoLoop(self):
+    @staticmethod
+    def _start_cam_handler():
         """
-            Get Video from picamera.
+          Create Thread to video loop.
         """
-        try:
-            # keep looping over frames until we are instructed to stop
-            while not self.stopEvent.is_set():
-                # grab the frame from the video stream and resize it to
-                # have a maximum width of 300 pixels
-                self.frame = self.vs.read()
-                self.frame = imutils.resize(self.frame, width=300)
+        cam_thread = Thread(target=cam_handler)
+        cam_thread.start()
 
-                # OpenCV represents images in BGR order; however PIL
-                # represents images in RGB order, so we need to swap
-                # the channels, then convert to PIL and ImageTk format
-                image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                image = Image.fromarray(image)
-                image = ImageTk.PhotoImage(image)
-                # if the panel is not None, we need to initialize it
-                if self.panel_video_stream is None:
-                    self.panel_video_stream = tki.Label(image=image)
-                    self.panel_video_stream.image = image
-                    self.panel_video_stream.pack(side="left", padx=10, pady=10)
-                    # otherwise, simply update the panel
-                else:
-                    self.panel_video_stream.configure(image=image)
-                    self.panel_video_stream.image = image
-        except RuntimeError as e:
-            print("[INFO] caught a RuntimeError")
+    def _cam_handler(self):
+        _cam = PiCamera()
+
+        _cam.exposure_mode = 'auto'
+        _cam.rotation = 270
+        _cam.hflip = False
+        _cam.vflip = False
+        _cam.crop = (0.0, 0.0, 1.0, 1.0)
+        _cam.resolution = (400, 300)
+
+        stream = BytesIO()
+        _cam.capture(stream, format='jpeg')
+        stream.seek(0)
+        tmpImage = Image.open(stream)
+        tmpImg = ImageTk.PhotoImage(tmpImage)
+        self.panel_video_stream.configure(image = tmpImg)
 
     def run(self):
         """
