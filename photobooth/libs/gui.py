@@ -3,7 +3,8 @@
 from threading import Thread
 from picamera import PiCamera
 from io import BytesIO
-from PIL import ImageTk, Image
+from PIL import ImageTk
+import PIL.Image
 
 """
     Try to import tkinter module
@@ -105,7 +106,7 @@ class Gui:
         stream = BytesIO()
         _cam.capture(stream, format='jpeg')
         stream.seek(0)
-        tmpImage = Image.open(stream)
+        tmpImage = PIL.Image.open(stream)
         tmpImg = ImageTk.PhotoImage(tmpImage)
         self.panel_video_stream.configure(image = tmpImg)
 
