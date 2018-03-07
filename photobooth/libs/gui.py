@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from picamera import PiCamera
+from io import BytesIO
+from PIL import ImageTk
+import PIL.Image
+import threading
 
 """
     Try to import tkinter module
@@ -13,49 +18,141 @@ except ImportError:
 
 class Gui:
 
-    def __init__(self, width, height, language_labels_set, videoStream=None):
+    def __init__(self, width, height, labels_text, log4py):
         """
             Create main window with main settings.
             :param width: Window width.
             :param height: Window height.
-            :param language_labels_set: language data set.
+            :param labels_text: language data set.
+            :param log4py: log4py handler.
             :type width: Int
             :type height: Int
-            :type language_labels_set: Configuration
+            :type labels_text: Configuration
+            :type log4py: log4py
         """
-        self.videoStream = videoStream
+        # Get logger
+        self.log4py = log4py
+
+        # Define stop event for video loop threading
+        self.stop_thread_event = threading.Event()
 
         # Create main window
         self.window = Tk()
 
-        # Get screen size
-        _screen_width = self.window.winfo_screenwidth() # width of the screen
-        _screen_height = self.window.winfo_screenheight() # height of the screen
+        # Start camera handler.
+        self._start_cam_handler()
+
+        # Append Widget on window
+        self.panel_video_stream = None
+        self._set_widgets(labels_text)
+
+        # Define window title
+        self.window.wm_title(labels_text['title'])
+
+        # Set screen position.
+        self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
+
+        # Close window event.
+        self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
+
+    def _define_window_position(self, width, height):
+        """
+          Define Window position base on window and screen size.
+          :param width: Window width.
+          :param height: Window height.
+          :type width: Int
+          :type height: Int
+          :rtype: Tuple
+        """
+        self.log4py.debug("Define Window position on the screen.")
 
         # define coordonate
-        x = (_screen_width/2) - (width/2)
-        y = (_screen_height/2) - (height/2)
+        x = (self.window.winfo_screenwidth()/2) - (width/2)
+        y = (self.window.winfo_screenheight()/2) - (height/2)
 
-        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
-        self.window.wm_protocol("WM_DELETE_WINDOW", self.window.quit)
-        self.window.wm_title(language_labels_set['title'])
-        self._set_widget(language_labels_set)
+        return width, height, x, y
 
-    def _set_widget(self, labels_set):
+    def _set_widgets(self, labels_set):
         """
-            Add widget to main window
+            Add Widgets to main window
         """
+        self.log4py.debug("Add Video panel and button on main window.")
+
         # Add Video Frame
-        frame_video_stream = self.videoStream.read()
-        panel_video_stream = Label(image=frame_video_stream)
-        panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
+        self.panel_video_stream = Label(self.window)
+        self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Add Snapshot button
         btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"])
         btn_take_picture.pack(side="bottom", fill="both", padx=10, pady=10)
 
+    def _video_loop(self):
+        """
+          Run video in loop
+        """
+        self.log4py.debug("Run video loop..")
+
+        # Create Picamera Object
+        _cam = PiCamera()
+
+        # Define Camera settings
+        _cam.sharpness = 0
+        _cam.contrast = 0
+        _cam.brightness = 50
+        _cam.saturation = 0
+        _cam.ISO = 0
+        _cam.video_stabilization = False
+        _cam.exposure_compensation = 0
+        _cam.meter_mode = 'average'
+        _cam.awb_mode = 'auto'
+        _cam.image_effect = 'none'
+        _cam.color_effects = None
+        _cam.exposure_mode = 'auto'
+        _cam.rotation = 270
+        _cam.hflip = False
+        _cam.vflip = False
+        _cam.crop = (0.0, 0.0, 1.0, 1.0)
+
+        # Define cam resolution
+        _cam_width = (self.window.winfo_width() - 20)
+        _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
+        _cam.resolution = (_cam_width, _cam_height)
+
+        # Run until stop thread event is set.
+        while self.stop_thread_event.is_set():
+            stream = BytesIO()
+            _cam.capture(stream, format='jpeg')
+            stream.seek(0)
+            tmpImage = PIL.Image.open(stream)
+            tmpImg = ImageTk.PhotoImage(tmpImage)
+            self.panel_video_stream.configure(image = tmpImg)
+
+    def _start_cam_handler(self):
+        """
+          Create Thread to video loop.
+        """
+        self.log4py.debug("Start thread camera handler.")
+
+        cam_thread = threading.Thread(target=self._video_loop)
+        cam_thread.start()
+
     def run(self):
         """
             Start Gui apps.
         """
+        self.log4py.debug("Start main loop.")
         self.window.mainloop()
+
+    def _on_close(self):
+        """
+          Close photobooth apps
+        """
+        self.log4py.info("Stop photoobooth apps.")
+
+        # Close Video loop Thread
+        self.log4py.debug("Stop Video loop thread.")
+        self.stop_thread_event.set()
+
+        # Close Window
+        self.log4py.debug("Close window.")
+        self.window.quit()
