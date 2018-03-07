@@ -83,15 +83,6 @@ class Gui:
         btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"])
         btn_take_picture.pack(side="bottom", fill="both", padx=10, pady=10)
 
-    def _start_cam_handler(self):
-        """
-          Create Thread to video loop.
-        """
-        self.log4py.debug("Start thread camera handler.")
-
-        cam_thread = Thread(target=self._video_loop)
-        cam_thread.start()
-
     def _video_loop(self):
         """
           Run video in loop
@@ -128,6 +119,15 @@ class Gui:
             tmpImg = ImageTk.PhotoImage(tmpImage)
             self.panel_video_stream.configure(image = tmpImg)
 
+    def _start_cam_handler(self):
+        """
+          Create Thread to video loop.
+        """
+        self.log4py.debug("Start thread camera handler.")
+
+        cam_thread = Thread(target=self._video_loop)
+        cam_thread.start()
+        
     def run(self):
         """
             Start Gui apps.
