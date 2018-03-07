@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from threading import Thread
+from threading import Thread, Event
 from picamera import PiCamera
 from io import BytesIO
 from PIL import ImageTk
@@ -40,10 +40,13 @@ class Gui:
         self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
 
         # Close window event.
-        self.window.wm_protocol("WM_DELETE_WINDOW", self.window.quit)
+        self.window.wm_protocol("WM_DELETE_WINDOW", self._close())
 
         # Define window title
         self.window.wm_title(labels_text['title'])
+
+        # Define stop event for video loop threading
+        self.stop_thread_event = Event()
 
         # Append Widget on window
         self.panel_video_stream = None
@@ -112,10 +115,11 @@ class Gui:
 
         # Define cam resolution
         _cam_width = (self.window.winfo_width() - 20)
-        _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 20)
+        _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
         _cam.resolution = (_cam_width, _cam_height)
 
-        while True:
+        # Run until stop thread event is set.
+        while not self.stop_thread_event.is_set():
             stream = BytesIO()
             _cam.capture(stream, format='jpeg')
             stream.seek(0)
@@ -138,3 +142,17 @@ class Gui:
         """
         self.log4py.debug("Start main loop.")
         self.window.mainloop()
+
+    def _close(self):
+        """
+          Close photobooth apps
+        """
+        self.log4py.infor("Stop photoobooth apps.")
+
+        # Close Video loop Thread
+        self.log4py.debug("Stop Video loop thread.")
+        self.stop_thread_event.set()
+
+        # Close Window
+        self.log4py.debug("Close window.")
+        self.window.quit()
