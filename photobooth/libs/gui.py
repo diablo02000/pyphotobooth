@@ -96,18 +96,29 @@ class Gui:
         """
           Run video in loop
         """
-        self.log4py.debug("Create camera video loop.")
+        self.log4py.debug("Run video loop..")
 
         # Create Picamera Object
         _cam = PiCamera()
 
         # Define Camera settings
+        _cam.sharpness = 0
+        _cam.contrast = 0
+        _cam.brightness = 50
+        _cam.saturation = 0
+        _cam.ISO = 0
+        _cam.video_stabilization = False
+        _cam.exposure_compensation = 0
+        _cam.meter_mode = 'average'
+        _cam.awb_mode = 'auto'
+        _cam.image_effect = 'none'
+        _cam.color_effects = None
         _cam.exposure_mode = 'auto'
         _cam.rotation = 270
         _cam.hflip = False
         _cam.vflip = False
         _cam.crop = (0.0, 0.0, 1.0, 1.0)
-        _cam.resolution = (400, 300)
+        _cam.resolution = (self.panel_video_stream.winfo_width(), self.panel_video_stream.winfo_height())
 
         while True:
             stream = BytesIO()
