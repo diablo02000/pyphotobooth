@@ -147,7 +147,7 @@ class Gui:
         """
           Close photobooth apps
         """
-        self.log4py.infor("Stop photoobooth apps.")
+        self.log4py.info("Stop photoobooth apps.")
 
         # Close Video loop Thread
         self.log4py.debug("Stop Video loop thread.")
