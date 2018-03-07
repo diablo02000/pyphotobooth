@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from threading import Thread, Event
 from picamera import PiCamera
 from io import BytesIO
 from PIL import ImageTk
 import PIL.Image
+import threading
 
 """
     Try to import tkinter module
@@ -34,7 +34,7 @@ class Gui:
         self.log4py = log4py
 
         # Define stop event for video loop threading
-        self.stop_thread_event = Event()
+        self.stop_thread_event = threading.Event()
 
         # Create main window
         self.window = Tk()
@@ -133,7 +133,7 @@ class Gui:
         """
         self.log4py.debug("Start thread camera handler.")
 
-        cam_thread = Thread(target=self._video_loop)
+        cam_thread = threading.Thread(target=self._video_loop)
         cam_thread.start()
 
     def run(self):
