@@ -93,9 +93,15 @@ class Gui:
         cam_thread.start()
 
     def _video_loop(self):
+        """
+          Run video in loop
+        """
         self.log4py.debug("Create camera video loop.")
+
+        # Create Picamera Object
         _cam = PiCamera()
 
+        # Define Camera settings
         _cam.exposure_mode = 'auto'
         _cam.rotation = 270
         _cam.hflip = False
@@ -103,12 +109,13 @@ class Gui:
         _cam.crop = (0.0, 0.0, 1.0, 1.0)
         _cam.resolution = (400, 300)
 
-        stream = BytesIO()
-        _cam.capture(stream, format='jpeg')
-        stream.seek(0)
-        tmpImage = PIL.Image.open(stream)
-        tmpImg = ImageTk.PhotoImage(tmpImage)
-        self.panel_video_stream.configure(image = tmpImg)
+        while True:
+            stream = BytesIO()
+            _cam.capture(stream, format='jpeg')
+            stream.seek(0)
+            tmpImage = PIL.Image.open(stream)
+            tmpImg = ImageTk.PhotoImage(tmpImage)
+            self.panel_video_stream.configure(image = tmpImg)
 
     def run(self):
         """
