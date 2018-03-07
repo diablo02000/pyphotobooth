@@ -33,6 +33,9 @@ class Gui:
         # Get logger
         self.log4py = log4py
 
+        # Define stop event for video loop threading
+        self.stop_thread_event = Event()
+
         # Create main window
         self.window = Tk()
 
@@ -44,9 +47,6 @@ class Gui:
 
         # Define window title
         self.window.wm_title(labels_text['title'])
-
-        # Define stop event for video loop threading
-        self.stop_thread_event = Event()
 
         # Append Widget on window
         self.panel_video_stream = None
