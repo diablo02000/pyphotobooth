@@ -109,7 +109,11 @@ class Gui:
         _cam.hflip = False
         _cam.vflip = False
         _cam.crop = (0.0, 0.0, 1.0, 1.0)
-        _cam.resolution = (self.panel_video_stream.winfo_width(), self.panel_video_stream.winfo_height())
+
+        # Define cam resolution
+        _cam_width = (self.window.winfo_width() - 20)
+        _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 20)
+        _cam.resolution = (_cam_width, _cam_height)
 
         while True:
             stream = BytesIO()
@@ -127,7 +131,7 @@ class Gui:
 
         cam_thread = Thread(target=self._video_loop)
         cam_thread.start()
-        
+
     def run(self):
         """
             Start Gui apps.
