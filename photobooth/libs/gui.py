@@ -39,21 +39,21 @@ class Gui:
         # Create main window
         self.window = Tk()
 
-        # Set screen position.
-        self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
-
-        # Close window event.
-        self.window.wm_protocol("WM_DELETE_WINDOW", self._close())
-
-        # Define window title
-        self.window.wm_title(labels_text['title'])
+        # Start camera handler.
+        self._start_cam_handler()
 
         # Append Widget on window
         self.panel_video_stream = None
         self._set_widgets(labels_text)
 
-        # Start camera handler.
-        self._start_cam_handler()
+        # Define window title
+        self.window.wm_title(labels_text['title'])
+
+        # Set screen position.
+        self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
+
+        # Close window event.
+        self.window.wm_protocol("WM_DELETE_WINDOW", self._close())
 
     def _define_window_position(self, width, height):
         """
