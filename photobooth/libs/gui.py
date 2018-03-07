@@ -53,7 +53,7 @@ class Gui:
         self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
 
         # Close window event.
-        self.window.wm_protocol("WM_DELETE_WINDOW", self._close())
+        self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
 
     def _define_window_position(self, width, height):
         """
@@ -119,7 +119,7 @@ class Gui:
         _cam.resolution = (_cam_width, _cam_height)
 
         # Run until stop thread event is set.
-        while not self.stop_thread_event.is_set():
+        while self.stop_thread_event.is_set():
             stream = BytesIO()
             _cam.capture(stream, format='jpeg')
             stream.seek(0)
@@ -143,7 +143,7 @@ class Gui:
         self.log4py.debug("Start main loop.")
         self.window.mainloop()
 
-    def _close(self):
+    def _on_close(self):
         """
           Close photobooth apps
         """
