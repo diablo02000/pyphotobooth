@@ -95,7 +95,7 @@ class Gui:
         self.log4py.info("Start video loop..")
 
         # Create Picamera context manager.
-        with picamera.PiCamera() as _cam:
+        with PiCamera() as _cam:
 
             self.log4py.debug("Init camera.")
 
