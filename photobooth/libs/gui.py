@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from picamera import PiCamera
+from imutils.video import VideoStream
 from io import BytesIO
 from PIL import ImageTk
 import PIL.Image
 import threading
+import cv2
 
 """
     Try to import tkinter module
@@ -92,40 +93,32 @@ class Gui:
         """
         self.log4py.debug("Run video loop..")
 
-        # Create Picamera Object
-        _cam = PiCamera()
-
-        # Define Camera settings
-        _cam.sharpness = 0
-        _cam.contrast = 0
-        _cam.brightness = 50
-        _cam.saturation = 0
-        _cam.ISO = 0
-        _cam.video_stabilization = False
-        _cam.exposure_compensation = 0
-        _cam.meter_mode = 'average'
-        _cam.awb_mode = 'auto'
-        _cam.image_effect = 'none'
-        _cam.color_effects = None
-        _cam.exposure_mode = 'auto'
-        _cam.rotation = 270
-        _cam.hflip = False
-        _cam.vflip = False
-        _cam.crop = (0.0, 0.0, 1.0, 1.0)
+        # Create VideoStream Flux
+        _video_stream = VideoStream(usePiCamera=args["picamera"] > 0).start()
 
         # Define cam resolution
-        _cam_width = (self.window.winfo_width() - 20)
-        _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
-        _cam.resolution = (_cam_width, _cam_height)
+        #_cam_width = (self.window.winfo_width() - 20)
+        #_cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
+        #_cam.resolution = (_cam_width, _cam_height)
 
         # Run until stop thread event is set.
         while self.stop_thread_event.is_set():
-            stream = BytesIO()
-            _cam.capture(stream, format='jpeg')
-            stream.seek(0)
-            tmpImage = PIL.Image.open(stream)
-            tmpImg = ImageTk.PhotoImage(tmpImage)
-            self.panel_video_stream.configure(image = tmpImg)
+            # Get Video Frame and resize it
+            _video_fram = _video_stream.read()
+            _video_fram = imutils.resize(_video_fram, width=(self.window.winfo_width() - 20))
+
+            # Get Image
+            image = cv2.cvtColor(_video_fram, cv2.COLOR_BGR2RGB)
+            image = PIL.Image.fromarray(image)
+            image = ImageTk.PhotoImage(image)
+
+            #stream = BytesIO()
+            #_cam.capture(stream, format='jpeg')
+            #stream.seek(0)
+            #tmpImage = PIL.Image.open(stream)
+            #tmpImg = ImageTk.PhotoImage(tmpImage)
+            self.panel_video_stream.configure(image=image)
+            self.panel_video_stream.image = image
 
     def _start_cam_handler(self):
         """
