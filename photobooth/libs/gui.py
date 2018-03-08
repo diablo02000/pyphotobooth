@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from imutils.video import VideoStream
+from picamera import PiCamera
 from io import BytesIO
 from PIL import ImageTk
 import PIL.Image
 import threading
-import cv2
 
 """
     Try to import tkinter module
 """
 try:
     # Python 2.7
-	from Tkinter import *
+    from Tkinter import *
 except ImportError:
     # Python 3
-	from tkinter import *
+    from tkinter import *
 
 class Gui:
 
@@ -76,10 +75,12 @@ class Gui:
     def _set_widgets(self, labels_set):
         """
             Add Widgets to main window
+            :param labels_set: language data set.
+            :type labels_set: Configuration
         """
-        self.log4py.debug("Add Video panel and button on main window.")
+        self.log4py.info("Create photobooth window.")
 
-        # Add Video Frame
+        # Add Label for Video stream in main window
         self.panel_video_stream = Label(self.window)
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
@@ -91,34 +92,52 @@ class Gui:
         """
           Run video in loop
         """
-        self.log4py.debug("Run video loop..")
+        self.log4py.info("Start video loop..")
 
-        # Create VideoStream Flux
-        _video_stream = VideoStream(usePiCamera=args["picamera"] > 0).start()
+        # Create Picamera context manager.
+        with picamera.PiCamera() as _cam:
 
-        # Define cam resolution
-        #_cam_width = (self.window.winfo_width() - 20)
-        #_cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
-        #_cam.resolution = (_cam_width, _cam_height)
+            self.log4py.debug("Init camera.")
 
-        # Run until stop thread event is set.
-        while self.stop_thread_event.is_set():
-            # Get Video Frame and resize it
-            _video_fram = _video_stream.read()
-            _video_fram = imutils.resize(_video_fram, width=(self.window.winfo_width() - 20))
+            # Define Camera settings
+            _cam.sharpness = 0
+            _cam.contrast = 0
+            _cam.brightness = 50
+            _cam.saturation = 0
+            _cam.ISO = 0
+            _cam.video_stabilization = False
+            _cam.exposure_compensation = 0
+            _cam.meter_mode = 'average'
+            _cam.awb_mode = 'auto'
+            _cam.image_effect = 'none'
+            _cam.color_effects = None
+            _cam.exposure_mode = 'auto'
+            _cam.rotation = 270
+            _cam.hflip = False
+            _cam.vflip = False
+            _cam.crop = (0.0, 0.0, 1.0, 1.0)
 
-            # Get Image
-            image = cv2.cvtColor(_video_fram, cv2.COLOR_BGR2RGB)
-            image = PIL.Image.fromarray(image)
-            image = ImageTk.PhotoImage(image)
+            # Define cam resolution
+            _cam_width = (self.window.winfo_width() - 20)
+            _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
+            _cam.resolution = (_cam_width, _cam_height)
 
-            #stream = BytesIO()
-            #_cam.capture(stream, format='jpeg')
-            #stream.seek(0)
-            #tmpImage = PIL.Image.open(stream)
-            #tmpImg = ImageTk.PhotoImage(tmpImage)
-            self.panel_video_stream.configure(image=image)
-            self.panel_video_stream.image = image
+            # Create IO stream
+            stream = BytesIO()
+
+            # Run capture loop.
+            self.log4py.debug("run capture loop.")
+            for img in _cam.capture_continuous(stream, format='jpeg'):
+
+                # If close event is set, close
+                if not self.stop_thread_event.is_set():
+                    self.log4py.info("Stop video loop.")
+                    break
+
+                stream.seek(0)
+                tmpImage = PIL.Image.open(stream)
+                tmpImg = ImageTk.PhotoImage(tmpImage)
+                self.panel_video_stream.configure(image = tmpImg)
 
     def _start_cam_handler(self):
         """
