@@ -127,17 +127,13 @@ class Gui:
 
             # Run capture loop.
             self.log4py.debug("run capture loop.")
-            for img in _cam.capture_continuous(stream, format='jpeg', use_video_port=True):
-
-                # If close event is set, close
-                if not self.stop_thread_event.is_set():
-                    self.log4py.info("Stop video loop.")
-                    break
-
-                stream.seek(0)
-                tmpImage = PIL.Image.open(stream)
-                tmpImg = ImageTk.PhotoImage(tmpImage)
-                self.panel_video_stream.configure(image = tmpImg)
+            while self.stop_thread_event.is_set():
+                for img in _cam.capture_continuous(stream, format='jpeg', use_video_port=True):
+                    stream.seek(0)
+                    tmpImage = PIL.Image.open(stream)
+                    tmpImg = ImageTk.PhotoImage(tmpImage)
+                    self.panel_video_stream.configure(image = tmpImg)
+            self.log4py.info("Stop video loop.")
 
 
     def _start_cam_handler(self):
