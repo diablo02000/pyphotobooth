@@ -5,6 +5,7 @@ from io import BytesIO
 from PIL import ImageTk
 import PIL.Image
 import threading
+import time
 
 """
     Try to import tkinter module
@@ -94,6 +95,9 @@ class Gui:
         """
         self.log4py.info("Start video loop..")
 
+        # Create IO stream
+        stream = BytesIO()
+
         # Create Picamera context manager.
         with PiCamera() as _cam:
 
@@ -122,20 +126,23 @@ class Gui:
             _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
             _cam.resolution = (_cam_width, _cam_height)
 
-            # Create IO stream
-            stream = BytesIO()
-
             # Run capture loop.
             self.log4py.debug("run capture loop.")
+            _cam.start_preview()
+
             while self.stop_thread_event.is_set():
+                time.sleep(1)
+                """
                 for img in _cam.capture_continuous(stream, format='jpeg', use_video_port=True):
                     stream.seek(0)
                     tmpImage = PIL.Image.open(stream)
                     tmpImg = ImageTk.PhotoImage(tmpImage)
                     self.panel_video_stream.configure(image = tmpImg)
+                """
             self.log4py.info("Stop video loop.")
 
-
+        stream.seek(0)
+        
     def _start_cam_handler(self):
         """
           Create Thread to video loop.
