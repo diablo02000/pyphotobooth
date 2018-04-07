@@ -103,7 +103,7 @@ class Gui:
 
         # Define Camera settings
         self.cam.sharpness = 0
-        self.cam.framerate = 32
+        # self.cam.framerate = 32
         self.cam.contrast = 0
         self.cam.brightness = 50
         self.cam.saturation = 0
@@ -124,7 +124,7 @@ class Gui:
         _cam_width = (self.window.winfo_width() - 20)
         _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
         self.cam.resolution = (_cam_width, _cam_height)
-        self.raw_capture = PiRGBArray(self.cam, size=(_cam_width, _cam_height))
+        self.raw_capture = PiRGBArray(self.cam)
 
         # Warmup cam
         time.sleep(0.1)
@@ -132,14 +132,17 @@ class Gui:
         # Run capture loop.
         self.log4py.debug("run capture loop.")
 
-        while self.stop_thread_event.is_set():
-            for frame in self.cam.capture_continuous(self.raw_capture, format='bgr', use_video_port=True):
-                # Get image array and display
-                img = frame.array
-                img = PIL.Image.fromarray(img)
-                img = ImageTk.PhotoImage(img)
-                self.panel_video_stream.configure(image=img)
-                self.raw_capture.truncate(0)
+        for frame in self.cam.capture_continuous(self.raw_capture, format='bgr', use_video_port=True):
+            if not self.stop_thread_event.is_set():
+                break
+
+            # Get image array and display
+            img = frame.array
+            img = PIL.Image.fromarray(img)
+            img = ImageTk.PhotoImage(img)
+            self.panel_video_stream.configure(image=img)
+            self.panel_video_stream.image = img
+            self.raw_capture.truncate(0)
 
         self.log4py.info("Stop video loop.")
 
