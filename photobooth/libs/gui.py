@@ -9,6 +9,8 @@ import numpy
 import threading
 import time
 import os
+import logging
+
 
 """
     Try to import tkinter module
@@ -23,20 +25,18 @@ except ImportError:
 
 class Gui:
 
-    def __init__(self, width, height, labels_text, log4py):
+    def __init__(self, width, height, labels_text):
         """
             Create main window with main settings.
             :param width: Window width.
             :param height: Window height.
             :param labels_text: language data set.
-            :param log4py: log4py handler.
             :type width: Int
             :type height: Int
             :type labels_text: Configuration
-            :type log4py: log4py
         """
         # Get logger
-        self.log4py = log4py
+        self.logger = logging.getLogger(__name__)
 
         # Define stop event for video loop threading
         self.stop_thread_event = threading.Event()
@@ -44,7 +44,7 @@ class Gui:
         """
             Create Windows and set attributes
         """
-        self.log4py.debug("Init windows and set screen localisation and title.")
+        self.logger.debug("Init windows and set screen localisation and title.")
         self.window = Tk()
 
         # Define window title
@@ -63,14 +63,14 @@ class Gui:
         """
             Init Picamera and warm up.
         """
-        # Init cam and video Flux.
+        # Init Picamera.
         self.cam = PiCamera()
         self.raw_capture = None
 
         """
             Append widgets
         """
-        log4py.info("Add widgets to main windows.")
+        self.logger.info("Add widgets to main windows.")
 
         # Add Snapshot button
         btn_take_picture = Button(self.window, text=labels_text["buttons"]["take_pictures"], command=self._take_picture)
@@ -104,7 +104,8 @@ class Gui:
         """
           Run video in loop
         """
-        self.log4py.info("Start video loop..")
+
+        self.logger.debug("Run video loop..")
 
         # Define Camera settings
         self.cam.sharpness = 0
@@ -135,7 +136,7 @@ class Gui:
         time.sleep(0.1)
 
         # Run capture loop.
-        self.log4py.debug("run capture loop.")
+        self.logger.debug("run capture loop.")
 
         for frame in self.cam.capture_continuous(self.raw_capture, format='bgr', use_video_port=True):
             if not self.stop_thread_event.is_set():
@@ -149,13 +150,13 @@ class Gui:
             self.panel_video_stream.image = img
             self.raw_capture.truncate(0)
 
-        self.log4py.info("Stop video loop.")
+        self.logger.info("Stop video loop.")
 
     def _start_cam_handler(self):
         """
           Create Thread to video loop.
         """
-        self.log4py.debug("Start thread camera handler.")
+        self.logger.debug("Start thread camera handler.")
 
         cam_thread = threading.Thread(target=self._video_loop)
         cam_thread.start()
@@ -164,7 +165,7 @@ class Gui:
         """
             Take picture from video flux.
         """
-        self.log4py.debug("Take picture.")
+        self.logger.debug("Take picture.")
         self.cam.capture(self.raw_capture, format="rgb", resize=(1280, 720))
 
         filename = os.path.join("/home/pi/Pictures/", "images-test.jpeg")
@@ -174,19 +175,19 @@ class Gui:
         """
             Start Gui apps.
         """
-        self.log4py.debug("Start main loop.")
+        self.logger.debug("Start main loop.")
         self.window.mainloop()
 
     def _on_close(self):
         """
           Close photobooth apps
         """
-        self.log4py.info("Stop photoobooth apps.")
+        self.logger.info("Stop photoobooth apps.")
 
         # Close Video loop Thread
-        self.log4py.debug("Stop Video loop thread.")
+        self.logger.debug("Stop Video loop thread.")
         self.stop_thread_event.set()
 
         # Close Window
-        self.log4py.debug("Close window.")
+        self.logger.debug("Close window.")
         self.window.quit()
