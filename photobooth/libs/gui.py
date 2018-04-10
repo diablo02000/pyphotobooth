@@ -8,6 +8,7 @@ import cv2
 import numpy
 import threading
 import time
+import os
 
 """
     Try to import tkinter module
@@ -18,6 +19,7 @@ try:
 except ImportError:
     # Python 3
     from tkinter import *
+
 
 class Gui:
 
@@ -39,61 +41,64 @@ class Gui:
         # Define stop event for video loop threading
         self.stop_thread_event = threading.Event()
 
-        # Create main window
+        """
+            Create Windows and set attributes
+        """
+        self.log4py.debug("Init windows and set screen localisation and title.")
         self.window = Tk()
-
-        # Create Video Stream panel
-        self.panel_video_stream = None
-        self._set_widgets(labels_text)
-
-        # Init cam and video Flux.
-        self.cam = PiCamera()
-        self.raw_capture = None
 
         # Define window title
         self.window.wm_title(labels_text['title'])
-
-        # Set screen position.
-        self.window.wm_geometry('%dx%d+%d+%d' % self._define_window_position(width, height))
-
-        # Close window event.
-        self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
-
-        # Start camera handler.
-        self._start_cam_handler()
-
-    def _define_window_position(self, width, height):
-        """
-          Define Window position base on window and screen size.
-          :param width: Window width.
-          :param height: Window height.
-          :type width: Int
-          :type height: Int
-          :rtype: Tuple
-        """
-        self.log4py.debug("Define Window position on the screen.")
 
         # define coordonate
         x = (self.window.winfo_screenwidth()/2) - (width/2)
         y = (self.window.winfo_screenheight()/2) - (height/2)
 
-        return width, height, x, y
+        # Set screen position.
+        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
 
-    def _set_widgets(self, labels_set):
-        """
-            Add Widgets to main window
-            :param labels_set: language data set.
-            :type labels_set: Configuration
-        """
-        self.log4py.info("Create photobooth window.")
+        # Close window event.
+        self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
 
-        # Add Label for Video stream in main window
-        self.panel_video_stream = Label(self.window)
-        self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
+        """
+            Init Picamera and warm up.
+        """
+        # Init cam and video Flux.
+        self.cam = PiCamera()
+        self.raw_capture = None
+
+        """
+            Append widgets
+        """
+        log4py.info("Add widgets to main windows.")
 
         # Add Snapshot button
-        btn_take_picture = Button(self.window, text=labels_set["buttons"]["take_pictures"], command=self._take_picture)
+        btn_take_picture = Button(self.window, text=labels_text["buttons"]["take_pictures"], command=self._take_picture)
         btn_take_picture.pack(side="bottom", fill="both", padx=10, pady=10)
+
+        # Create Video Stream panel
+        self.panel_video_stream = Label(self.window)
+
+        # get windows size
+        w, h = self._get_widget_size(self.window)
+
+        # get button size
+        bw, bh = self._get_widget_size(btn_take_picture)
+
+        self.panel_video_stream.config(width=(w - 20), height=((h - bh) - 20))
+        self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
+
+        # Start camera handler.
+        self._start_cam_handler()
+
+    @staticmethod
+    def _get_widget_size(widget):
+        """
+        Return width height of widget
+        :param widget: Widget object
+        :return: Width and Height
+        """
+        return widget.winfo_width(), widget.winfo_height()
 
     def _video_loop(self):
         """
@@ -103,8 +108,8 @@ class Gui:
 
         # Define Camera settings
         self.cam.sharpness = 0
-        # self.cam.framerate = 32
         self.cam.contrast = 0
+        self.cam.framerate = 30
         self.cam.brightness = 50
         self.cam.saturation = 0
         self.cam.ISO = 0
@@ -126,7 +131,7 @@ class Gui:
         self.cam.resolution = (_cam_width, _cam_height)
         self.raw_capture = PiRGBArray(self.cam)
 
-        # Warmup cam
+        # Warm up cam
         time.sleep(0.1)
 
         # Run capture loop.
@@ -160,13 +165,10 @@ class Gui:
             Take picture from video flux.
         """
         self.log4py.debug("Take picture.")
-        self.cam.capture(self.raw_capture, format="bgr", resize=(1920, 1080))
+        self.cam.capture(self.raw_capture, format="rgb", resize=(1280, 720))
 
-        # Construct a numpy array from the stream
-        data = numpy.fromstring(self.raw_capture.getvalue(), dtype=numpy.uint8)
-        # "Decode" the image from the array, preserving colour
-        image = cv2.imdecode(data, 1)
-        cv2.imshow("Faces", image)
+        filename = os.path.join("/home/pi/Pictures/", "images-test.jpeg")
+        cv2.imwrite(filename, self.raw_capture)
 
     def run(self):
         """
@@ -180,9 +182,6 @@ class Gui:
           Close photobooth apps
         """
         self.log4py.info("Stop photoobooth apps.")
-
-        self.log4py.debug("Close camera.")
-        self.cam.stop_preview()
 
         # Close Video loop Thread
         self.log4py.debug("Stop Video loop thread.")
