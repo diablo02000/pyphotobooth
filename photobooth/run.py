@@ -68,8 +68,7 @@ def run(lang):
         # Create Gui
         photobooth_app = Gui(configuration.resolution['width'],
                              configuration.resolution['height'],
-                             getattr(configuration, lang),
-                             log4py)
+                             getattr(configuration, lang))
 
         # Run Photobooth.
         logger.info("Photobooth apps running ...")
