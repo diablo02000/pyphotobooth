@@ -1,7 +1,5 @@
 # Define output directory for photos.
 pictures_directory: "~/Images"
-# Define log path
-# log: "./photobooth.log"
 # Define resolution settings
 resolution:
   width: 800
