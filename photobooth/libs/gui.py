@@ -32,7 +32,7 @@ class Gui:
             :type labels_text: Configuration
         """
         # Get logger
-        self.logger = logging.log(__name__)
+        self.logger = logging.getLogger(__name__)
 
         # Define stop event for video loop threading
         self.stop_thread_event = threading.Event()
