@@ -45,7 +45,7 @@ def check_output_directory(directory):
 
         os.remove(testing_file)
     except NotADirectoryError:
-        logger.error("{} not a valide directory.".format(directory), exc_info=True)
+        logger.error("{} not a valid directory.".format(directory), exc_info=True)
         exit(2)
     except Exception as e:
         logger.error("Unexpected error",  exc_info=True)
