@@ -44,7 +44,7 @@ class Gui:
         """
             Create Windows and set attributes
         """
-        self.logger.debug("Init windows and set screen localisation and title.")
+        self.logger.debug("Create main windows.")
         self.window = Tk()
 
         # Define window title
@@ -65,7 +65,7 @@ class Gui:
         """
         # Init Picamera.
         self.cam = PiCamera()
-        self.raw_capture = None
+        self.raw_capture = PiRGBArray(self.cam)
 
         """
             Append widgets
@@ -107,23 +107,26 @@ class Gui:
 
         self.logger.debug("Run video loop..")
 
+        # Define resolution
+        self.cam.resolution = (3280, 2464)
+
         # Define Camera settings
-        self.cam.sharpness = 0
-        self.cam.contrast = 0
-        self.cam.framerate = 30
-        self.cam.brightness = 50
-        self.cam.saturation = 0
-        self.cam.ISO = 0
-        self.cam.video_stabilization = False
-        self.cam.exposure_compensation = 0
-        self.cam.meter_mode = 'average'
-        self.cam.awb_mode = 'auto'
-        self.cam.image_effect = 'none'
-        self.cam.color_effects = None
-        self.cam.exposure_mode = 'auto'
+        # self.cam.sharpness = 0
+        # self.cam.contrast = 0
+        self.cam.framerate = 32
+        # self.cam.brightness = 50
+        # self.cam.saturation = 0
+        self.cam.ISO = 800
+        # self.cam.video_stabilization = False
+        # self.cam.exposure_compensation = 0
+        # self.cam.meter_mode = 'average'
+        # self.cam.awb_mode = 'auto'
+        # self.cam.image_effect = 'none'
+        # self.cam.color_effects = None
+        self.cam.exposure_mode = 'off'
         self.cam.rotation = 270
-        self.cam.hflip = False
-        self.cam.vflip = False
+        # self.cam.hflip = False
+        # self.cam.vflip = False
         self.cam.crop = (0.0, 0.0, 1.0, 1.0)
 
         # Define cam resolution
@@ -133,7 +136,7 @@ class Gui:
         self.raw_capture = PiRGBArray(self.cam)
 
         # Warm up cam
-        time.sleep(0.1)
+        time.sleep(10)
 
         # Run capture loop.
         self.logger.debug("run capture loop.")
