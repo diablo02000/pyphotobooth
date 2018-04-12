@@ -3,11 +3,10 @@
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 from PIL import ImageTk
+from datetime import datetime
 import PIL.Image
 import cv2
-import numpy
 import threading
-import time
 import os
 import logging
 
@@ -41,31 +40,28 @@ class Gui:
         # Define stop event for video loop threading
         self.stop_thread_event = threading.Event()
 
+        # Init Picamera.
+        self.cam = PiCamera()
+        self.raw_capture = None
+
         """
             Create Windows and set attributes
         """
-        self.logger.debug("Create main windows.")
+        self.logger.info("Create windows apps.")
         self.window = Tk()
 
         # Define window title
         self.window.wm_title(labels_text['title'])
 
-        # define coordonate
+        # Get screen coordonate to center apps.
         x = (self.window.winfo_screenwidth()/2) - (width/2)
         y = (self.window.winfo_screenheight()/2) - (height/2)
 
-        # Set screen position.
+        # Set screen position. (center)
         self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
 
         # Close window event.
         self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
-
-        """
-            Init Picamera and warm up.
-        """
-        # Init Picamera.
-        self.cam = PiCamera()
-        self.raw_capture = PiRGBArray(self.cam)
 
         """
             Append widgets
@@ -105,43 +101,83 @@ class Gui:
           Run video in loop
         """
 
-        self.logger.debug("Run video loop..")
+        self.logger.info("Start video loop.")
 
-        # Define resolution
-        self.cam.resolution = (3280, 2464)
+        # Define brightness
+        # default: 50
+        # self.cam.brightness = 50
+
+        # Define contrast
+        # self.cam.contrast = 0
 
         # Define Camera settings
         # self.cam.sharpness = 0
-        # self.cam.contrast = 0
-        self.cam.framerate = 32
-        # self.cam.brightness = 50
-        # self.cam.saturation = 0
-        self.cam.ISO = 800
-        # self.cam.video_stabilization = False
-        # self.cam.exposure_compensation = 0
-        # self.cam.meter_mode = 'average'
-        # self.cam.awb_mode = 'auto'
+
+        # Define image effect
+        # You can choose between none, negative, solarize, sketch, denoise, emboss, oilpaint, hatch, gpen,
+        # pastel, watercolor, film, blur, saturation, coloswap, washedout, posterise, colorpoint, colorbalance, cartoon,
+        # deinterlace1 and deinterlace2
+        # default: none
         # self.cam.image_effect = 'none'
-        # self.cam.color_effects = None
-        self.cam.exposure_mode = 'off'
+
+        # Define white balance
+        # You can choose between off, auto, sunlight, cloudy, shade, tungsten, fluorescent, incandescent, flash, horizon
+        # default: auto
+        # self.cam.awb_mode = 'auto'
+
+        # Define exposure mode
+        # You can choose between off, auto, night, nightpreview, blacklight, spotlight, sports, snow, beach, verylong,
+        # fixedfps, antishake, fireworks
+        # default: auto
+        # self.cam.exposure_compensation = 'auto'
+
+        # Define camera framerate
+        # default: 30
+        # self.cam.framerate = 32
+
+        # Define camera saturation
+        # default: 0
+        # self.cam.saturation = 0
+
+        # Define sensitivity of the camera light
+        # You can define value between 100 and 1600.
+        # Lower iso speed imply less sensitivity
+        # default: 400
+        # self.cam.iso = 800
+
+        # Define expose camera method
+        # You can choose between average, spot, backlit, matrix
+        # default: average
+        # self.cam.meter_mode = 'average'
+
+        # Rotate camera
         self.cam.rotation = 270
+
+        # Set horizontal or vertical flip.
+        # default: false
         # self.cam.hflip = False
         # self.cam.vflip = False
-        self.cam.crop = (0.0, 0.0, 1.0, 1.0)
 
-        # Define cam resolution
-        _cam_width = (self.window.winfo_width() - 20)
-        _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
+        # Set zoom in camera input
+        # default: (0.0, 0.0, 1.0, 1.0)
+        # self.cam.crop = (0.0, 0.0, 1.0, 1.0)
+
+        """
+        Define camera resolution.
+        Max resolution is 2592*1944
+        default: 1280*720
+        """
+        # _cam_width = (self.window.winfo_width() - 20)
+        # _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
+        _cam_width, _cam_height = (2592, 1944)
+        self.logger.info("Init camera resolution ({},{})".format(_cam_width, _cam_height))
         self.cam.resolution = (_cam_width, _cam_height)
-        self.raw_capture = PiRGBArray(self.cam)
+        self.raw_capture = PiRGBArray(self.cam, size=(_cam_width, _cam_height))
 
-        # Warm up cam
-        time.sleep(10)
-
-        # Run capture loop.
-        self.logger.debug("run capture loop.")
-
+        self.logger.debug("Run capture loop.")
         for frame in self.cam.capture_continuous(self.raw_capture, format='bgr', use_video_port=True):
+
+            # If stop event set break capture loop
             if not self.stop_thread_event.is_set():
                 break
 
@@ -149,6 +185,7 @@ class Gui:
             img = frame.array
             img = PIL.Image.fromarray(img)
             img = ImageTk.PhotoImage(img)
+
             self.panel_video_stream.configure(image=img)
             self.panel_video_stream.image = img
             self.raw_capture.truncate(0)
@@ -169,10 +206,11 @@ class Gui:
             Take picture from video flux.
         """
         self.logger.debug("Take picture.")
-        self.cam.capture(self.raw_capture, format="rgb", resize=(1280, 720))
 
-        filename = os.path.join("/home/pi/Pictures/", "images-test.jpeg")
-        cv2.imwrite(filename, self.raw_capture)
+        timestamp = datetime.now().strftime('%s')
+        img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
+        cv2.imwrite(img_filename, self.raw_capture, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        self.logger.info("Picture saved in {}.".format(img_filename))
 
     def run(self):
         """
@@ -186,6 +224,9 @@ class Gui:
           Close photobooth apps
         """
         self.logger.info("Stop photoobooth apps.")
+
+        self.logger.debug("Stop camera.")
+        self.cam.close()
 
         # Close Video loop Thread
         self.logger.debug("Stop Video loop thread.")
