@@ -9,6 +9,7 @@ import cv2
 import threading
 import os
 import logging
+import time
 
 
 """
@@ -201,10 +202,15 @@ class Gui:
         cam_thread = threading.Thread(target=self._video_loop)
         cam_thread.start()
 
-    def _take_picture(self):
+    def _take_picture(self, timer=5):
         """
             Take picture from video flux.
+            :param timer: Waiting time in second.
         """
+        # Wait please.
+        for x in range(timer, 0, -1):
+            time.sleep(1)
+
         self.logger.debug("Take picture.")
 
         timestamp = datetime.now().strftime('%s')
@@ -227,6 +233,7 @@ class Gui:
 
         self.logger.debug("Stop camera.")
         self.cam.close()
+        self.raw_capture.close()
 
         # Close Video loop Thread
         self.logger.debug("Stop Video loop thread.")
