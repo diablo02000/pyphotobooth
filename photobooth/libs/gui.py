@@ -43,7 +43,12 @@ class Gui:
 
         # Init Picamera.
         self.cam = PiCamera()
-        self.raw_capture = None
+        self.raw_capture = PiRGBArray(self.cam)
+        self.CAMERA_RESOLUTION_MAPS = {'s': (640, 480),
+                                       'm': (1296, 730),
+                                       'l': (1296, 972),
+                                       'xl': (1920, 1080),
+                                       'xxl': (2592, 1944)}
 
         """
             Create Windows and set attributes
@@ -76,26 +81,29 @@ class Gui:
         # Create Video Stream panel
         self.panel_video_stream = Label(self.window)
 
-        # get windows size
-        w, h = self._get_widget_size(self.window)
-
         # get button size
         bw, bh = self._get_widget_size(btn_take_picture)
 
-        self.panel_video_stream.config(width=(w - 20), height=((h - bh) - 20))
+        self.panel_video_stream.config(width=(width - 20), height=((height - bh) - 20))
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Start camera handler.
         self._start_cam_handler()
 
     @staticmethod
-    def _get_widget_size(widget):
+    def _get_widget_size(widget, attr=None):
         """
         Return width height of widget
         :param widget: Widget object
+        :param attr: Specific attribut.
         :return: Width and Height
         """
-        return widget.winfo_width(), widget.winfo_height()
+        if attr == "width":
+            return widget.winfo_width()
+        elif attr == "height":
+            return widget.winfo_height()
+        else:
+            return widget.winfo_width(), widget.winfo_height()
 
     def _video_loop(self):
         """
@@ -168,15 +176,15 @@ class Gui:
         Max resolution is 2592*1944
         default: 1280*720
         """
-        # _cam_width = (self.window.winfo_width() - 20)
-        # _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
-        _cam_width, _cam_height = (2592, 1944)
+        _cam_width = (self._get_widget_size(self.window, "width") - 20)
+        _cam_height = (self._get_widget_size(self.window, "height") - self._get_widget_size(self.panel_video_stream, "height") - 40)
+        # _cam_width, _cam_height = self.CAMERA_RESOLUTION_MAPS['s']
         self.logger.info("Init camera resolution ({},{})".format(_cam_width, _cam_height))
         self.cam.resolution = (_cam_width, _cam_height)
         self.raw_capture = PiRGBArray(self.cam, size=(_cam_width, _cam_height))
 
         self.logger.debug("Run capture loop.")
-        for frame in self.cam.capture_continuous(self.raw_capture, format='bgr', use_video_port=True):
+        for frame in self.cam.capture_continuous(self.raw_capture, format='rgb', use_video_port=True):
 
             # If stop event set break capture loop
             if not self.stop_thread_event.is_set():
@@ -215,7 +223,7 @@ class Gui:
 
         timestamp = datetime.now().strftime('%s')
         img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
-        cv2.imwrite(img_filename, self.raw_capture, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        self.cam.capture(img_filename, resize=self.CAMERA_RESOLUTION_MAPS['l'])
         self.logger.info("Picture saved in {}.".format(img_filename))
 
     def run(self):
@@ -232,7 +240,7 @@ class Gui:
         self.logger.info("Stop photoobooth apps.")
 
         self.logger.debug("Stop camera.")
-        self.cam.close()
+        # self.cam.close()
         self.raw_capture.close()
 
         # Close Video loop Thread
