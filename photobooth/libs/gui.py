@@ -116,7 +116,7 @@ class Gui:
 
         # Define camera framerate
         # default: 30
-        # self.cam.framerate = 30
+        self.cam.framerate = 30
 
         # Define brightness
         # default: 50
@@ -133,22 +133,23 @@ class Gui:
         # pastel, watercolor, film, blur, saturation, coloswap, washedout, posterise, colorpoint, colorbalance, cartoon,
         # deinterlace1 and deinterlace2
         # default: none
-        # self.cam.image_effect = 'none'
+        self.cam.image_effect = 'none'
 
         # Define white balance
         # You can choose between off, auto, sunlight, cloudy, shade, tungsten, fluorescent, incandescent, flash, horizon
         # default: auto
-        # self.cam.awb_mode = 'auto'
+        self.cam.awb_mode = 'auto'
 
         # Define exposure mode
         # You can choose between off, auto, night, nightpreview, blacklight, spotlight, sports, snow, beach, verylong,
         # fixedfps, antishake, fireworks
         # default: auto
-        # self.cam.exposure_compensation = 'auto'
+        self.cam.exposure_mode = 'off'
+        self.cam.exposure_compensation = 0
 
         # Define camera saturation
         # default: 0
-        # self.cam.saturation = 0
+        self.cam.saturation = 0
 
         # Define sensitivity of the camera light
         # You can define value between 100 and 1600.
@@ -159,7 +160,7 @@ class Gui:
         # Define expose camera method
         # You can choose between average, spot, backlit, matrix
         # default: average
-        # self.cam.meter_mode = 'average'
+        self.cam.meter_mode = 'average'
 
         # Rotate camera
         self.cam.rotation = 270
@@ -192,6 +193,8 @@ class Gui:
         self.cam.resolution = (_cam_width, _cam_height)
 
         self.logger.debug("Run capture loop.")
+        timer = 0
+
         for frame in self.cam.capture_continuous(self.raw_capture, format='rgb', use_video_port=True):
 
             # If stop event set break capture loop
@@ -208,11 +211,13 @@ class Gui:
                 # run countdown
                 if (self.take_snapshot_timestamp + timedelta(seconds=timer)) < datetime.now() and timer < 6:
                     self.cam.annotate_text_size = 50
-                    if (5 - timer) == 0:
+
+                    if (5 - timer) <= 1:
                         self.cam.annotate_text = 'smile'
                     else:
                         self.cam.annotate_text = str(5 - timer)
-                        timer += 1
+                    timer += 1
+
                 elif timer == 6:
                     # Reset annotate
                     self.cam.annotate_text = ''
