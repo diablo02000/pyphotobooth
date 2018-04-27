@@ -71,7 +71,6 @@ def run(lang):
                              getattr(configuration, lang))
 
         # Run Photobooth.
-        logger.info("Photobooth apps running ...")
         photobooth_app.run()
 
     except Exception as e:
