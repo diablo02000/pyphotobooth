@@ -3,13 +3,11 @@
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 from PIL import ImageTk
-from datetime import datetime
+from datetime import datetime, timedelta
 import PIL.Image
-import cv2
 import threading
 import os
 import logging
-import time
 
 
 """
@@ -41,9 +39,18 @@ class Gui:
         # Define stop event for video loop threading
         self.stop_thread_event = threading.Event()
 
+        self.take_snapshot = False
+        self.take_snapshot_timestamp = datetime.now()
+
         # Init Picamera.
         self.cam = PiCamera()
-        self.raw_capture = None
+        self.raw_capture = PiRGBArray(self.cam)
+        # Define resolution V2 camera
+        self.CAMERA_RESOLUTION_MAPS = {'s': (640, 480),
+                                       'm': (1280, 720),
+                                       'l': (1640, 922),
+                                       'xl': (1640, 1232),
+                                       'xxl': (3280, 2464)}
 
         """
             Create Windows and set attributes
@@ -76,26 +83,29 @@ class Gui:
         # Create Video Stream panel
         self.panel_video_stream = Label(self.window)
 
-        # get windows size
-        w, h = self._get_widget_size(self.window)
-
         # get button size
         bw, bh = self._get_widget_size(btn_take_picture)
 
-        self.panel_video_stream.config(width=(w - 20), height=((h - bh) - 20))
+        self.panel_video_stream.config(width=(width - 20), height=((height - bh) - 20))
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Start camera handler.
         self._start_cam_handler()
 
     @staticmethod
-    def _get_widget_size(widget):
+    def _get_widget_size(widget, attr=None):
         """
         Return width height of widget
         :param widget: Widget object
+        :param attr: Specific attribut.
         :return: Width and Height
         """
-        return widget.winfo_width(), widget.winfo_height()
+        if attr == "width":
+            return widget.winfo_width()
+        elif attr == "height":
+            return widget.winfo_height()
+        else:
+            return widget.winfo_width(), widget.winfo_height()
 
     def _video_loop(self):
         """
@@ -103,6 +113,10 @@ class Gui:
         """
 
         self.logger.info("Start video loop.")
+
+        # Define camera framerate
+        # default: 30
+        # self.cam.framerate = 30
 
         # Define brightness
         # default: 50
@@ -132,10 +146,6 @@ class Gui:
         # default: auto
         # self.cam.exposure_compensation = 'auto'
 
-        # Define camera framerate
-        # default: 30
-        # self.cam.framerate = 32
-
         # Define camera saturation
         # default: 0
         # self.cam.saturation = 0
@@ -144,7 +154,7 @@ class Gui:
         # You can define value between 100 and 1600.
         # Lower iso speed imply less sensitivity
         # default: 400
-        # self.cam.iso = 800
+        self.cam.iso = 800
 
         # Define expose camera method
         # You can choose between average, spot, backlit, matrix
@@ -156,31 +166,61 @@ class Gui:
 
         # Set horizontal or vertical flip.
         # default: false
-        # self.cam.hflip = False
+        self.cam.hflip = True
         # self.cam.vflip = False
 
         # Set zoom in camera input
         # default: (0.0, 0.0, 1.0, 1.0)
-        # self.cam.crop = (0.0, 0.0, 1.0, 1.0)
+        self.cam.crop = (0.0, 0.0, 1.0, 1.0)
+
+        self.cam.video_stabilization = True
 
         """
         Define camera resolution.
         Max resolution is 2592*1944
         default: 1280*720
         """
-        # _cam_width = (self.window.winfo_width() - 20)
-        # _cam_height = (self.window.winfo_height() - self.panel_video_stream.winfo_height() - 40)
-        _cam_width, _cam_height = (2592, 1944)
+        _cam_width = (self._get_widget_size(self.window, "width") - 20)
+        _cam_height = (self._get_widget_size(self.window, "height") -
+                       self._get_widget_size(self.panel_video_stream, "height") - 40)
+
+        # If cam resolution is smaller than small configuration mapper
+        if _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][0] or _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][1]:
+            _cam_width, _cam_height = self.CAMERA_RESOLUTION_MAPS['s']
+
         self.logger.info("Init camera resolution ({},{})".format(_cam_width, _cam_height))
         self.cam.resolution = (_cam_width, _cam_height)
-        self.raw_capture = PiRGBArray(self.cam, size=(_cam_width, _cam_height))
 
         self.logger.debug("Run capture loop.")
-        for frame in self.cam.capture_continuous(self.raw_capture, format='bgr', use_video_port=True):
+        for frame in self.cam.capture_continuous(self.raw_capture, format='rgb', use_video_port=True):
 
             # If stop event set break capture loop
             if not self.stop_thread_event.is_set():
                 break
+
+            if self.take_snapshot:
+
+                # Reset timer if older than 5 seconds.
+                if (self.take_snapshot_timestamp + timedelta(seconds=6)) < datetime.now():
+                    self.take_snapshot_timestamp = datetime.now()
+                    timer = 0
+
+                # run countdown
+                if (self.take_snapshot_timestamp + timedelta(seconds=timer)) < datetime.now() and timer < 6:
+                    self.cam.annotate_text_size = 50
+                    if (5 - timer) == 0:
+                        self.cam.annotate_text = 'smile'
+                    else:
+                        self.cam.annotate_text = str(5 - timer)
+                        timer += 1
+                elif timer == 6:
+                    # Reset annotate
+                    self.cam.annotate_text = ''
+                    timestamp = datetime.now().strftime('%s')
+                    img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
+                    self.cam.capture(img_filename, resize=self.CAMERA_RESOLUTION_MAPS['xxl'])
+                    self.logger.info("Picture saved in {}.".format(img_filename))
+                    self.take_snapshot = False
 
             # Get image array and display
             img = frame.array
@@ -192,6 +232,8 @@ class Gui:
             self.raw_capture.truncate(0)
 
         self.logger.info("Stop video loop.")
+        self.cam.close()
+        self.raw_capture.close()
 
     def _start_cam_handler(self):
         """
@@ -202,21 +244,12 @@ class Gui:
         cam_thread = threading.Thread(target=self._video_loop)
         cam_thread.start()
 
-    def _take_picture(self, timer=5):
+    def _take_picture(self):
         """
             Take picture from video flux.
-            :param timer: Waiting time in second.
         """
-        # Wait please.
-        for x in range(timer, 0, -1):
-            time.sleep(1)
-
         self.logger.debug("Take picture.")
-
-        timestamp = datetime.now().strftime('%s')
-        img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
-        cv2.imwrite(img_filename, self.raw_capture, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-        self.logger.info("Picture saved in {}.".format(img_filename))
+        self.take_snapshot = True
 
     def run(self):
         """
@@ -230,10 +263,6 @@ class Gui:
           Close photobooth apps
         """
         self.logger.info("Stop photoobooth apps.")
-
-        self.logger.debug("Stop camera.")
-        self.cam.close()
-        self.raw_capture.close()
 
         # Close Video loop Thread
         self.logger.debug("Stop Video loop thread.")
