@@ -1,5 +1,5 @@
-picamera==1.13
-PyYAML==3.12
-imutils==0.4.5
-numpy==1.14.1
-opencv-python==3.3.0.10
+picamera>=1.13
+PyYAML>=5.4
+imutils>=0.5
+numpy>=1.21
+opencv-python>=4.5.3
