@@ -1,5 +1,6 @@
-![Photobooth icons](photobooth/img/photobooth.png)
 # PhotoBooth
+
+![Photobooth icons](photobooth/img/photobooth.png)
 
 ## Description
 
@@ -18,7 +19,9 @@ This project was build with:
 
 ### Software
 
-First you need to install `Raspbian` on your SD card. I will not explain this section, they are plenty of tutorial to do this.
+First you need to install `Raspbian` on your SD card.
+I will not explain this section, they are plenty of tutorial
+to do this.
 
 Then we need to install `python` and `python pip` on your Raspbian:
 
@@ -39,7 +42,8 @@ And add the last python3 librairies:
 ```
 
 ## Troubleshoot
-### libcblas import error.
+
+### libcblas import error
 
 ```
 ImportError: libcblas.so.3: cannot opne shared object file: No such  file or directory
@@ -51,7 +55,7 @@ You maybe forget to install `libatlas-base-dev`:
 install apt-get install libatlas-base-dev
 ```
 
-### ImageTk import error.
+### ImageTk import error
 
 ```
 ImportError: cannot import name 'ImageTk'
