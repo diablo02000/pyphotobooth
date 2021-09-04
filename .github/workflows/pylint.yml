@@ -1,6 +1,10 @@
 name: Pylint
 
-on: [push]
+on:
+  push:
+    branches-ignore:
+      - master
+      - main
 
 jobs:
   build:
