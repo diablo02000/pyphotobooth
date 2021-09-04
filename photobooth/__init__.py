@@ -1,7 +1,9 @@
-# photobooth/__init__.py
+"""
+    Python photobooth applications for Raspberry PI.
+"""
 
-from .libs import gui
-from .libs import configuration
+from photobooth.libs import gui
+from photobooth.libs import configuration
 
 __version__ = '0.1'
 
