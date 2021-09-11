@@ -48,7 +48,7 @@ class Gui:
         self.cam = PiCamera()
         self.raw_capture = PiRGBArray(self.cam)
         # Define resolution V2 camera
-        self.CAMERA_RESOLUTION_MAPS = {'s': (640, 480),
+        self.camera_resolution_maps = {'s': (640, 480),
                                        'm': (1280, 720),
                                        'l': (1640, 922),
                                        'xl': (1640, 1232),
@@ -62,11 +62,11 @@ class Gui:
         self.window.wm_title(labels_text['title'])
 
         # Get screen coordonate to center apps.
-        x = (self.window.winfo_screenwidth()/2) - (width/2)
-        y = (self.window.winfo_screenheight()/2) - (height/2)
+        x_axe = (self.window.winfo_screenwidth()/2) - (width/2)
+        y_axe = (self.window.winfo_screenheight()/2) - (height/2)
 
         # Set screen position. (center)
-        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
+        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x_axe, y_axe))
 
         # Close window event.
         self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
@@ -182,8 +182,8 @@ class Gui:
                        self._get_widget_size(self.panel_video_stream, "height") - 40)
 
         # If cam resolution is smaller than small configuration mapper
-        if _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][0] or _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][1]:
-            _cam_width, _cam_height = self.CAMERA_RESOLUTION_MAPS['s']
+        if _cam_height < self.camera_resolution_maps['s'][0] or _cam_height < self.camera_resolution_maps['s'][1]:
+            _cam_width, _cam_height = self.camera_resolution_maps['s']
 
         self.logger.info("Init camera resolution (%s,%s)", _cam_width, _cam_height)
         self.cam.resolution = (_cam_width, _cam_height)
@@ -219,7 +219,7 @@ class Gui:
                     self.cam.annotate_text = ''
                     timestamp = datetime.now().strftime('%s')
                     img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
-                    self.cam.capture(img_filename, resize=self.CAMERA_RESOLUTION_MAPS['xxl'])
+                    self.cam.capture(img_filename, resize=self.camera_resolution_maps['xxl'])
                     self.logger.info("Picture saved in %s.", img_filename)
                     self.take_snapshot = False
 
