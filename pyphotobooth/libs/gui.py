@@ -1,27 +1,29 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from picamera import PiCamera
-from picamera.array import PiRGBArray
-from PIL import ImageTk
-from datetime import datetime, timedelta
-import PIL.Image
+"""
+    Handle Gui interface.
+"""
+
 import threading
 import os
 import logging
+from datetime import datetime, timedelta
+from picamera import PiCamera
+from picamera.array import PiRGBArray
+from PIL import ImageTk
+import PIL.Image
 
-
-"""
-    Try to import tkinter module
-"""
+# Try to import tkinter module
 try:
     # Python 2.7
-    from Tkinter import *
+    from Tkinter import Button, Tk, Label
 except ImportError:
     # Python 3
-    from tkinter import *
+    from tkinter import Button, Tk, Label
 
 
 class Gui:
+    """
+        Create Gui.
+    """
 
     def __init__(self, width, height, labels_text):
         """
@@ -46,15 +48,13 @@ class Gui:
         self.cam = PiCamera()
         self.raw_capture = PiRGBArray(self.cam)
         # Define resolution V2 camera
-        self.CAMERA_RESOLUTION_MAPS = {'s': (640, 480),
+        self.camera_resolution_maps = {'s': (640, 480),
                                        'm': (1280, 720),
                                        'l': (1640, 922),
                                        'xl': (1640, 1232),
                                        'xxl': (3280, 2464)}
 
-        """
-            Create Windows and set attributes
-        """
+        # Create Windows and set attributes
         self.logger.info("Create windows apps.")
         self.window = Tk()
 
@@ -62,18 +62,16 @@ class Gui:
         self.window.wm_title(labels_text['title'])
 
         # Get screen coordonate to center apps.
-        x = (self.window.winfo_screenwidth()/2) - (width/2)
-        y = (self.window.winfo_screenheight()/2) - (height/2)
+        x_axe = (self.window.winfo_screenwidth()/2) - (width/2)
+        y_axe = (self.window.winfo_screenheight()/2) - (height/2)
 
         # Set screen position. (center)
-        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x, y))
+        self.window.wm_geometry('%dx%d+%d+%d' % (width, height, x_axe, y_axe))
 
         # Close window event.
         self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
 
-        """
-            Append widgets
-        """
+        # Append widgets
         self.logger.info("Add widgets to main windows.")
 
         # Add Snapshot button
@@ -84,9 +82,9 @@ class Gui:
         self.panel_video_stream = Label(self.window)
 
         # get button size
-        bw, bh = self._get_widget_size(btn_take_picture)
+        _, btn_h = self._get_widget_size(btn_take_picture)
 
-        self.panel_video_stream.config(width=(width - 20), height=((height - bh) - 20))
+        self.panel_video_stream.config(width=(width - 20), height=((height - btn_h) - 20))
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Start camera handler.
@@ -176,20 +174,18 @@ class Gui:
 
         self.cam.video_stabilization = True
 
-        """
-        Define camera resolution.
-        Max resolution is 2592*1944
-        default: 1280*720
-        """
+        # Define camera resolution.
+        # Max resolution is 2592*1944
+        # default: 1280*720
         _cam_width = (self._get_widget_size(self.window, "width") - 20)
         _cam_height = (self._get_widget_size(self.window, "height") -
                        self._get_widget_size(self.panel_video_stream, "height") - 40)
 
         # If cam resolution is smaller than small configuration mapper
-        if _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][0] or _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][1]:
-            _cam_width, _cam_height = self.CAMERA_RESOLUTION_MAPS['s']
+        if _cam_height < self.camera_resolution_maps['s'][0] or _cam_height < self.camera_resolution_maps['s'][1]:
+            _cam_width, _cam_height = self.camera_resolution_maps['s']
 
-        self.logger.info("Init camera resolution ({},{})".format(_cam_width, _cam_height))
+        self.logger.info("Init camera resolution (%s,%s)", _cam_width, _cam_height)
         self.cam.resolution = (_cam_width, _cam_height)
 
         self.logger.debug("Run capture loop.")
@@ -223,8 +219,8 @@ class Gui:
                     self.cam.annotate_text = ''
                     timestamp = datetime.now().strftime('%s')
                     img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
-                    self.cam.capture(img_filename, resize=self.CAMERA_RESOLUTION_MAPS['xxl'])
-                    self.logger.info("Picture saved in {}.".format(img_filename))
+                    self.cam.capture(img_filename, resize=self.camera_resolution_maps['xxl'])
+                    self.logger.info("Picture saved in %s.", img_filename)
                     self.take_snapshot = False
 
             # Get image array and display

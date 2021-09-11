@@ -1,4 +1,6 @@
 picamera>=1.13
+pillow>=8.3.2
+pil
 PyYAML>=5.4
 imutils>=0.5
 numpy>=1.21

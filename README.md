@@ -1,6 +1,6 @@
-# PhotoBooth
+# PyPhotoBooth
 
-![Photobooth icons](photobooth/img/photobooth.png)
+![Photobooth icons](pyphotobooth/img/photobooth.png)
 
 ## Description
 

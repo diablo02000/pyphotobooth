@@ -32,8 +32,8 @@ try:
     # Load submodules
     sys.path.append(LIBS_PATH)
 
-    from photobooth.libs import Gui
-    from photobooth.libs import Configuration
+    from .libs import Gui
+    from .libs import Configuration
 
 except Exception: # pylint: disable=broad-except
     logger.error("Failed to load photobooth libs.")
