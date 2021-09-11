@@ -23,7 +23,5 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        export PYTHONPATH="${PYTHONPATH}:${PWD}/photobooth/libs"
-        cd "${PWD}/photobooth/"
-        pylint `ls -R|grep .py$|xargs`
+        pylint pyphotobooth
 
