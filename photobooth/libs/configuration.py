@@ -1,9 +1,14 @@
-import yaml
+"""
+Handle photobooth configuration.
+"""
+
 import os
+import sys
 import logging
+import yaml
 
 
-class Configuration(object):
+class Configuration:
     """
     Create configuration object.
     """
@@ -19,9 +24,9 @@ class Configuration(object):
         """
         try:
             # Open configuration file and load YAML
-            with open(self.file, 'r') as f:
-                self.logger.debug("Load {} configuration file.".format(self.file))
-                config = yaml.load(f)
+            with open(self.file, 'r', encoding="utf-8") as f_cfg:
+                self.logger.debug("Load %s configuration file.", self.file)
+                config = yaml.load(f_cfg)
 
             # Set configuration attribute
             self.resolution = config['resolution']
@@ -29,12 +34,12 @@ class Configuration(object):
 
             # Set meta for each language
             for lang in config['languages'].keys():
-                logging.debug("Set lang [{}]".format(config['languages']))
+                logging.debug("Set lang [%s]", config['languages'])
                 setattr(self, lang, config['languages'][lang])
 
-        except KeyError as e:
-            self.logger.error("Parameters missing in configuration file: {}.".format(e), exc_info=True)
-            exit(2)
-        except Exception as e:
+        except KeyError as key_e:
+            self.logger.error("Parameters missing in configuration file: %s.", key_e, exc_info=True)
+            sys.exit(2)
+        except (OSError, yaml.YAMLError):
             self.logger.error("Failed to parse configuration file", exc_info=True)
-            exit(2)
+            sys.exit(2)
