@@ -82,9 +82,9 @@ class Gui:
         self.panel_video_stream = Label(self.window)
 
         # get button size
-        bw, bh = self._get_widget_size(btn_take_picture)
+        _, btn_h = self._get_widget_size(btn_take_picture)
 
-        self.panel_video_stream.config(width=(width - 20), height=((height - bh) - 20))
+        self.panel_video_stream.config(width=(width - 20), height=((height - btn_h) - 20))
         self.panel_video_stream.pack(side="top", fill="both", padx=10, pady=10)
 
         # Start camera handler.
@@ -185,7 +185,7 @@ class Gui:
         if _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][0] or _cam_height < self.CAMERA_RESOLUTION_MAPS['s'][1]:
             _cam_width, _cam_height = self.CAMERA_RESOLUTION_MAPS['s']
 
-        self.logger.info("Init camera resolution ({},{})".format(_cam_width, _cam_height))
+        self.logger.info("Init camera resolution (%s,%s)", _cam_width, _cam_height)
         self.cam.resolution = (_cam_width, _cam_height)
 
         self.logger.debug("Run capture loop.")
