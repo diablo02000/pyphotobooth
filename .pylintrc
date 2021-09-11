@@ -24,7 +24,7 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the ignore-list. The
 # regex matches against paths.
-ignore-paths="pyphotobooth/configurations"
+ignore-paths=
 
 # Files or directories matching the regex patterns are skipped. The regex
 # matches against base names, not paths.
@@ -32,7 +32,7 @@ ignore-patterns=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook="from pylint.config import find_pylintrc; import os, sys; sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), '/pyphotobooth/libs'))"
+#init-hook=
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use.
@@ -152,9 +152,7 @@ disable=print-statement,
         xreadlines-attribute,
         deprecated-sys-function,
         exception-escape,
-        comprehension-escape,
-        import-error,
-        no-else-return
+        comprehension-escape
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -340,7 +338,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=180
+max-line-length=100
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -553,7 +551,7 @@ ignored-parents=
 max-args=5
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=9
+max-attributes=7
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5
@@ -574,10 +572,10 @@ max-public-methods=20
 max-returns=6
 
 # Maximum number of statements in function / method body.
-max-statements=60
+max-statements=50
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=0
+min-public-methods=2
 
 
 [IMPORTS]
