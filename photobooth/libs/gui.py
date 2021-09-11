@@ -1,27 +1,29 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from picamera import PiCamera
-from picamera.array import PiRGBArray
-from PIL import ImageTk
-from datetime import datetime, timedelta
-import PIL.Image
+"""
+    Handle Gui interface.
+"""
+
 import threading
 import os
 import logging
+from datetime import datetime, timedelta
+from picamera import PiCamera
+from picamera.array import PiRGBArray
+from PIL import ImageTk
+import PIL.Image
 
-
-"""
-    Try to import tkinter module
-"""
+# Try to import tkinter module
 try:
     # Python 2.7
-    from Tkinter import *
+    from Tkinter import Button, Tk, Label
 except ImportError:
     # Python 3
-    from tkinter import *
+    from tkinter import Button, Tk, Label
 
 
 class Gui:
+    """
+        Create Gui.
+    """
 
     def __init__(self, width, height, labels_text):
         """
@@ -52,9 +54,7 @@ class Gui:
                                        'xl': (1640, 1232),
                                        'xxl': (3280, 2464)}
 
-        """
-            Create Windows and set attributes
-        """
+        # Create Windows and set attributes
         self.logger.info("Create windows apps.")
         self.window = Tk()
 
@@ -71,9 +71,7 @@ class Gui:
         # Close window event.
         self.window.wm_protocol("WM_DELETE_WINDOW", self._on_close())
 
-        """
-            Append widgets
-        """
+        # Append widgets
         self.logger.info("Add widgets to main windows.")
 
         # Add Snapshot button
@@ -176,11 +174,9 @@ class Gui:
 
         self.cam.video_stabilization = True
 
-        """
-        Define camera resolution.
-        Max resolution is 2592*1944
-        default: 1280*720
-        """
+        # Define camera resolution.
+        # Max resolution is 2592*1944
+        # default: 1280*720
         _cam_width = (self._get_widget_size(self.window, "width") - 20)
         _cam_height = (self._get_widget_size(self.window, "height") -
                        self._get_widget_size(self.panel_video_stream, "height") - 40)
@@ -224,7 +220,7 @@ class Gui:
                     timestamp = datetime.now().strftime('%s')
                     img_filename = os.path.join("/home/pi/Pictures/", "picture-{}.jpg".format(timestamp))
                     self.cam.capture(img_filename, resize=self.CAMERA_RESOLUTION_MAPS['xxl'])
-                    self.logger.info("Picture saved in {}.".format(img_filename))
+                    self.logger.info("Picture saved in %s.", img_filename)
                     self.take_snapshot = False
 
             # Get image array and display
